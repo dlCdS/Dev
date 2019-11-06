@@ -1,0 +1,225 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="base">
+      <UniqueIdentifier>{19602acf-4ba5-417d-983c-8162df21a53d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widget">
+      <UniqueIdentifier>{09448b64-4fd4-4c02-8c8c-934b0bdfe9d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="window">
+      <UniqueIdentifier>{993ddc89-1749-431a-91bb-83364b584e03}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="window\include\MainWindow.h">
+      <Filter>window</Filter>
+    </ClInclude>
+    <ClInclude Include="window\include\SubWindow.h">
+      <Filter>window</Filter>
+    </ClInclude>
+    <ClInclude Include="window\include\Window.h">
+      <Filter>window</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\CallbackWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\ClickWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\ColoredSquareWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\ContainerWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\FieldWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\FitLineWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\GetColourWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\GridWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\IconWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\LineWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\ListWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\MoveGridWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\NamedIconWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\PageWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\SetColourWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\SurfaceEditorWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\TextFieldWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\Widget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="widget\include\ZoomWidget.h">
+      <Filter>widget</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\Animation.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\AnimationDataBase.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\AnimationEditor.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\Defines.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\GraphicalEngine.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\LetterLib.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\LoopbackAction.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\LoopbackEvent.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\PublicSdlEventServer.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\SdlSound.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\Surface.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\TextureDataBase.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\Widgetable.h">
+      <Filter>base</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="window\src\MainWindow.cpp">
+      <Filter>window</Filter>
+    </ClCompile>
+    <ClCompile Include="window\src\SubWindow.cpp">
+      <Filter>window</Filter>
+    </ClCompile>
+    <ClCompile Include="window\src\Window.cpp">
+      <Filter>window</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\CallbackWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\ClickWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\ColoredSquareWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\ContainerWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\FieldWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\FitLineWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\GetColourWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\GridWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\IconWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\LineWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\ListWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\MoveGridWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\NamedIconWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\PageWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\PublicSdlEventServer.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\SetColourWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\SurfaceEditorWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\TextFieldWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\Widget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="widget\src\ZoomWidget.cpp">
+      <Filter>widget</Filter>
+    </ClCompile>
+    <ClCompile Include="base\src\Animation.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="base\src\AnimationDataBase.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="base\src\AnimationEditor.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="base\src\GraphicalEngine.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="base\src\LetterLib.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="base\src\LoopbackAction.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="base\src\LoopbackEvent.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="base\src\SdlSound.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="base\src\Surface.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="base\src\TextureDataBase.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="base\src\Widgetable.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="xml">
+      <UniqueIdentifier>{a4158719-416b-460f-938a-bc490f1a9a79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="event">
+      <UniqueIdentifier>{7963e0e2-1e0b-4876-89cc-c79a3bf178df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{7ebdf9ff-07c4-4643-a64b-6dc6a82b7ca1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="xml\include\XMLCompliant.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="xml\include\XMLParsable.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="xml\include\XMLParser.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="event\include\Action.h">
+      <Filter>event</Filter>
+    </ClInclude>
+    <ClInclude Include="event\include\Event.h">
+      <Filter>event</Filter>
+    </ClInclude>
+    <ClInclude Include="event\include\EventServer.h">
+      <Filter>event</Filter>
+    </ClInclude>
+    <ClInclude Include="event\include\EventSolver.h">
+      <Filter>event</Filter>
+    </ClInclude>
+    <ClInclude Include="common\include\BinaryFile.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\include\Clocks.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\include\Common.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\include\Logger.h">
+      <Filter>common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="xml\src\XMLCompliant.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="xml\src\XMLParsable.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="xml\src\XMLParser.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="event\src\Action.cpp">
+      <Filter>event</Filter>
+    </ClCompile>
+    <ClCompile Include="event\src\Event.cpp">
+      <Filter>event</Filter>
+    </ClCompile>
+    <ClCompile Include="event\src\EventServer.cpp">
+      <Filter>event</Filter>
+    </ClCompile>
+    <ClCompile Include="event\src\EventSolver.cpp">
+      <Filter>event</Filter>
+    </ClCompile>
+    <ClCompile Include="common\src\BinaryFile.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="common\src\Clocks.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="common\src\Common.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

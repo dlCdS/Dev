@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="base\include\Animation.h" />
+    <ClInclude Include="base\include\AnimationDataBase.h" />
+    <ClInclude Include="base\include\AnimationEditor.h" />
+    <ClInclude Include="base\include\Defines.h" />
+    <ClInclude Include="base\include\GraphicalEngine.h" />
+    <ClInclude Include="base\include\LetterLib.h" />
+    <ClInclude Include="base\include\LoopbackAction.h" />
+    <ClInclude Include="base\include\LoopbackEvent.h" />
+    <ClInclude Include="base\include\PublicSdlEventServer.h" />
+    <ClInclude Include="base\include\SdlSound.h" />
+    <ClInclude Include="base\include\Surface.h" />
+    <ClInclude Include="base\include\TextureDataBase.h" />
+    <ClInclude Include="base\include\Widgetable.h" />
+    <ClInclude Include="widget\include\CallbackWidget.h" />
+    <ClInclude Include="widget\include\ClickWidget.h" />
+    <ClInclude Include="widget\include\ColoredSquareWidget.h" />
+    <ClInclude Include="widget\include\ContainerWidget.h" />
+    <ClInclude Include="widget\include\FieldWidget.h" />
+    <ClInclude Include="widget\include\FitLineWidget.h" />
+    <ClInclude Include="widget\include\GetColourWidget.h" />
+    <ClInclude Include="widget\include\GridWidget.h" />
+    <ClInclude Include="widget\include\IconWidget.h" />
+    <ClInclude Include="widget\include\LineWidget.h" />
+    <ClInclude Include="widget\include\ListWidget.h" />
+    <ClInclude Include="widget\include\MoveGridWidget.h" />
+    <ClInclude Include="widget\include\NamedIconWidget.h" />
+    <ClInclude Include="widget\include\PageWidget.h" />
+    <ClInclude Include="widget\include\SetColourWidget.h" />
+    <ClInclude Include="widget\include\SurfaceEditorWidget.h" />
+    <ClInclude Include="widget\include\TextFieldWidget.h" />
+    <ClInclude Include="widget\include\Widget.h" />
+    <ClInclude Include="widget\include\ZoomWidget.h" />
+    <ClInclude Include="window\include\MainWindow.h" />
+    <ClInclude Include="window\include\SubWindow.h" />
+    <ClInclude Include="window\include\Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="base\src\Animation.cpp" />
+    <ClCompile Include="base\src\AnimationDataBase.cpp" />
+    <ClCompile Include="base\src\AnimationEditor.cpp" />
+    <ClCompile Include="base\src\GraphicalEngine.cpp" />
+    <ClCompile Include="base\src\LetterLib.cpp" />
+    <ClCompile Include="base\src\LoopbackAction.cpp" />
+    <ClCompile Include="base\src\LoopbackEvent.cpp" />
+    <ClCompile Include="base\src\SdlSound.cpp" />
+    <ClCompile Include="base\src\Surface.cpp" />
+    <ClCompile Include="base\src\TextureDataBase.cpp" />
+    <ClCompile Include="base\src\Widgetable.cpp" />
+    <ClCompile Include="widget\src\CallbackWidget.cpp" />
+    <ClCompile Include="widget\src\ClickWidget.cpp" />
+    <ClCompile Include="widget\src\ColoredSquareWidget.cpp" />
+    <ClCompile Include="widget\src\ContainerWidget.cpp" />
+    <ClCompile Include="widget\src\FieldWidget.cpp" />
+    <ClCompile Include="widget\src\FitLineWidget.cpp" />
+    <ClCompile Include="widget\src\GetColourWidget.cpp" />
+    <ClCompile Include="widget\src\GridWidget.cpp" />
+    <ClCompile Include="widget\src\IconWidget.cpp" />
+    <ClCompile Include="widget\src\LineWidget.cpp" />
+    <ClCompile Include="widget\src\ListWidget.cpp" />
+    <ClCompile Include="widget\src\MoveGridWidget.cpp" />
+    <ClCompile Include="widget\src\NamedIconWidget.cpp" />
+    <ClCompile Include="widget\src\PageWidget.cpp" />
+    <ClCompile Include="widget\src\PublicSdlEventServer.cpp" />
+    <ClCompile Include="widget\src\SetColourWidget.cpp" />
+    <ClCompile Include="widget\src\SurfaceEditorWidget.cpp" />
+    <ClCompile Include="widget\src\TextFieldWidget.cpp" />
+    <ClCompile Include="widget\src\Widget.cpp" />
+    <ClCompile Include="widget\src\ZoomWidget.cpp" />
+    <ClCompile Include="window\src\MainWindow.cpp" />
+    <ClCompile Include="window\src\SubWindow.cpp" />
+    <ClCompile Include="window\src\Window.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{14E0ED7F-2FE0-4A86-9A95-1CFB97F33199}</ProjectGuid>
+    <RootNamespace>GraphicalEngine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>E:\Libraries\SDL2\SDL2\include;base/include;widget/include;window/include;../Common/xml/include;../Common/event/include;../Common/common/include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>E:\Libraries\SDL2\SDL2\include;base/include;widget/include;window/include;../Common/xml/include;../Common/event/include;../Common/common/include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>E:\Libraries\SDL2\SDL2\include;base/include;widget/include;window/include;../Common/xml/include;../Common/event/include;../Common/common/include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>E:\Libraries\SDL2\SDL2\include;base/include;widget/include;window/include;../Common/xml/include;../Common/event/include;../Common/common/include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\e_fdenis\Documents\Dev\Libs\SDL2_ttf-2.0.14\include;C:\Users\e_fdenis\Documents\Dev\Libs\SDL_gfx\include;C:\Users\e_fdenis\source\repos\Dogodo\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\e_fdenis\Documents\Dev\Libs\SDL2_ttf-2.0.14\include;C:\Users\e_fdenis\Documents\Dev\Libs\SDL_gfx\include;C:\Users\e_fdenis\source\repos\Dogodo\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\Users\e_fdenis\Documents\Dev\Libs\SDL2-2.0.9\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2test.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
