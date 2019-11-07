@@ -1,6 +1,7 @@
 #pragma once
 #include "CudaFreqDrawer.h"
 #include <SoundHandler.h>
+#include "CudaPlaneVib.h"
 
 struct pos_d {
 	ge_d w, h;
@@ -10,12 +11,14 @@ __device__ void setPixel(void* pixel_surface, const int &x, const int &y, CudaSd
 
 __device__ Uint32 colorFromComplexRatio(const thrust::complex<ge_d> &c);
 
+__device__ Uint32 colorFromComplex(const thrust::complex<ge_d> &c, const ge_d& ratio);
 
-__device__ Uint32 colorFromComplex(const thrust::complex<ge_d> &c);
+__device__ Uint32 colorFromMultiComplex(const thrust::complex<ge_d>& c1, const thrust::complex<ge_d>& c2, const ge_d& ratio);
 
-__device__ Uint32 colorFromMultiComplex(const thrust::complex<ge_d>& c1, const thrust::complex<ge_d>& c2);
+__device__ Uint32 colorFromScalar(const ge_d& scalar, const ge_d& from, const ge_d& range);
 
-__global__ void copy_complex_board(thrust::complex<ge_d> * c1, thrust::complex<ge_d>* c2, void *pixel_surface, CudaSdlInterface::Parameter *param);
+__global__ void copy_complex_board(thrust::complex<ge_d> * c1, thrust::complex<ge_d>* c2, 
+	void *pixel_surface, CudaSdlInterface::Parameter *param, CudaSdlInterface::NumberDrawParam* n_param);
 
 __global__ void mandelbrot_set(thrust::complex<ge_d> * cur, thrust::complex<ge_d> * plan, CudaSdlInterface::Parameter *param);
 
@@ -31,10 +34,13 @@ __global__ void propagate_transformation(thrust::complex<ge_d>* transform, thrus
 
 __global__ void copy_board(thrust::complex<ge_d>* dst, thrust::complex<ge_d>* src, CudaSdlInterface::Parameter* param);
 
+__global__ void copy_double_board(ge_d* val, void* pixel_surface, CudaSdlInterface::Parameter* param, CudaSdlInterface::NumberDrawParam* n_param);
+
 namespace KernelCallers { // KernelCallers
 	CUDA_ERROR check_exec(const std::string &s);
 
-	CUDA_ERROR copyComplexBoard(thrust::complex<ge_d> * c1, thrust::complex<ge_d>* c2, void *pixel_surface, uint dimension, CudaSdlInterface::Parameter *param);
+	CUDA_ERROR copyComplexBoard(thrust::complex<ge_d> * c1, thrust::complex<ge_d>* c2, void *pixel_surface, 
+		uint dimension, CudaSdlInterface::Parameter *param, CudaSdlInterface::NumberDrawParam *n_param);
 
 	CUDA_ERROR mandelbrotSet(thrust::complex<ge_d> * cur, thrust::complex<ge_d> * plan, uint dimension, CudaSdlInterface::Parameter *param);
 
@@ -49,6 +55,8 @@ namespace KernelCallers { // KernelCallers
 	CUDA_ERROR propagateTransformation(thrust::complex<ge_d>* transform, thrust::complex<ge_d>* temp, uint dimension, CudaSdlInterface::Parameter* param, CudaFractalModel::FractalData* data);
 
 	CUDA_ERROR checkParam(CudaSdlInterface::Parameter* param);
+
+	CUDA_ERROR copyDoubleBoard(ge_d* val, void* pixel_surface, uint dimension, CudaSdlInterface::Parameter* param, CudaSdlInterface::NumberDrawParam* n_param);
 }
 
 __device__ pos_d get_relative_position(const int& x, CudaSdlInterface::Parameter* param);
@@ -68,4 +76,10 @@ namespace KernelFreq {
 	CUDA_ERROR toFreqArray(Complex* lbuffer, Complex* rbuffer, struct FreqPick* freq, uint dimension);
 
 	CUDA_ERROR interpolateFreq(FreqPick* freq, FreqPick* int_freq, FreqPick* int_freq_last, uint dimension, CudaSdlInterface::Parameter* param, FreqDrawerData* freq_data);
+}
+
+__global__ void vibration_model1(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata);
+
+namespace KernelVib {
+	CUDA_ERROR vibrationModel1(ge_d *a, ge_d *v, ge_d *h, ge_d *avg, uint dimension, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData *vdata);
 }

@@ -9,6 +9,7 @@
 #include <CudaFreqDrawer.h>
 #include <SoundHandler.h>
 #include <SdlSound.h>
+#include <CudaPlaneVib.h>
 
 bool done = false;
 
@@ -19,7 +20,7 @@ ContainerWidget* maindisplay;
 const ge_i frame_duration = 40;
 const ge_i frame_rate = 1;
 const ge_i size = 200;
-const ge_pi wsize = { 1920, 1000 };
+const ge_pi wsize = { 200, 200 };
 const ge_i factor = 1;
 const ge_d ratio = 0.5;
 const ge_d rotate = -45.0;
@@ -28,6 +29,7 @@ const ge_pd center = { -0.0, 1.0 };
 const bool play_sound = false;
 
 // #define FRACTAL
+#define VIBRATION
 
 bool step();
 
@@ -45,6 +47,7 @@ void initGraphicalEngine() {
 }
 
 bool cudaFreqLoop();
+bool vibrationModelLoop();
 
 void GraphicalLoop() {
    	GE::AddWidgetToWindow(maindisplay);
@@ -54,6 +57,8 @@ void GraphicalLoop() {
 		Clocks::start("tested_model");
 #ifdef FRACTAL
 		done = step();
+#elif defined VIBRATION
+		done = vibrationModelLoop();
 #else
 		done = cudaFreqLoop();
 #endif
@@ -80,6 +85,8 @@ FractalModel fractal;
 CudaFractalModel sdlInterface;
 CudaFreqDrawer freqDrawer;
 SoundHandler sp;
+CudaPlaneVib  vibModel;
+
 
 void cudaFractalLoop();
 
@@ -142,7 +149,6 @@ void cudaFractalModel() {
 	sdlInterface.setColourWidget(scw);
 
 	sdlInterface.generate(center, rotate, { ratio, wsize.h*ratio / wsize.w });
-
 }
 
 void cudaFractalLoop() {
@@ -202,6 +208,29 @@ bool cudaFreqLoop() {
 	return sp.noData();
 }
 
+void vibrationModel() {
+	vibModel.setSize({ wsize.w, wsize.h }, factor);
+
+	SetColourWidget* scw = new SetColourWidget();
+
+	maindisplay->addWidget(scw);
+
+	vibModel.setColourWidget(scw);
+
+	vibModel.generate(0.01);
+
+	vibModel.addSource({ 0.5, 0.5 });
+}
+
+bool vibrationModelLoop() {
+	static ge_d freq(0.001), t(0.0);
+	ge_d h(cos(freq * t));
+	t += 1.0;
+	vibModel.setPosition(h, 0);
+	vibModel.cycle();
+	return false;
+}
+
  // #define TEST_SP_MODEL
 
 int main(int argc, char* argv[]) {
@@ -210,6 +239,8 @@ int main(int argc, char* argv[]) {
 
 #ifdef FRACTAL
 	cudaFractalModel();
+#elif defined VIBRATION
+	vibrationModel();
 #else
 	cudaFreqDrawer();
 #endif

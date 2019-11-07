@@ -99,7 +99,7 @@ CUDA_ERROR CudaFractalModel::generate(const ge_pd & center, const ge_d &degree_a
 void CudaFractalModel::draw()
 {
 	CUDA_ERROR cudaStatus;
-	KernelCallers::copyComplexBoard(d_cur, d_transform, d_surface_pixel, _size.w*_size.h, d_sdl_param);
+	KernelCallers::copyComplexBoard(d_cur, d_transform, d_surface_pixel, _size.w*_size.h, d_sdl_param, d_num_param);
 	cudaStatus = copySurfaceToHost();
 	if (cudaStatus != CUDA_SUCCESS) {
 		Log(LERROR, "failed copySurfaceToHost");

@@ -16,11 +16,16 @@ public:
 		int pitch;
 	};
 
+	struct NumberDrawParam {
+		ge_d from, range; // param for scalar drawing
+		ge_d complex_range; // param for complex number
+	};
+
 	CudaSdlInterface();
 	virtual ~CudaSdlInterface();
 
 	virtual void setColourWidget(SetColourWidget* scw);
-
+	CUDA_ERROR setNumberDrawParam(const NumberDrawParam& param = { -2.0, 4.0, 255.0 });
 
 	CUDA_ERROR testMemcpy();
 
@@ -39,6 +44,7 @@ protected:
 	SDL_Surface * _surface;
 	void *d_surface_pixel;
 
-	struct Parameter sdl_param, * d_sdl_param;
+	Parameter sdl_param, * d_sdl_param;
+	NumberDrawParam * d_num_param;
 };
 

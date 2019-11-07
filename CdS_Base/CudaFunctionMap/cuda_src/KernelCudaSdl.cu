@@ -51,9 +51,9 @@ __device__ Uint32 colorFromComplexRatio(const thrust::complex<ge_d>& c)
 	return A_MASK + (Uint8(r) << 16) + (Uint8(g) << 8) + Uint8(b);
 }
 
-__device__ Uint32 colorFromComplex(const thrust::complex<ge_d>& c)
+__device__ Uint32 colorFromComplex(const thrust::complex<ge_d>& c, const ge_d &ratio)
 {
-	ge_d r(0.0), g(0.0), b(0.0), ratio(255.0);
+	ge_d r(0.0), g(0.0), b(0.0);
 	b = c.real() * c.real() + c.imag() * c.imag();
 	b = sqrt(b)*ratio;
 	r = c.real()*ratio;
@@ -63,9 +63,9 @@ __device__ Uint32 colorFromComplex(const thrust::complex<ge_d>& c)
 	return A_MASK + (Uint8(r) << 16) + (Uint8(g) << 8) + Uint8(b);
 }
 
-__device__ Uint32 colorFromMultiComplex(const thrust::complex<ge_d>& c1, const thrust::complex<ge_d>& c2)
+__device__ Uint32 colorFromMultiComplex(const thrust::complex<ge_d>& c1, const thrust::complex<ge_d>& c2, const ge_d& ratio)
 {
-	ge_d r(0.0), g(0.0), b(0.0), ratio(255.0);
+	ge_d r(0.0), g(0.0), b(0.0);
 	b = c2.real() * c2.real() + c2.imag() * c2.imag();
 	b = sqrt(b) * ratio;
 	r = c1.real() * ratio;
@@ -75,12 +75,39 @@ __device__ Uint32 colorFromMultiComplex(const thrust::complex<ge_d>& c1, const t
 	return A_MASK + (Uint8(r) << 16) + (Uint8(g) << 8) + Uint8(b);
 }
 
-__global__ void copy_complex_board(thrust::complex<ge_d>* c1, thrust::complex<ge_d>* c2, void * pixel_surface, CudaSdlInterface::Parameter * param)
+__device__ Uint32 colorFromScalar(const ge_d& scalar, const ge_d& from, const ge_d& range)
+{
+	ge_d loc_scalar((scalar - from) / range);
+	Uint8 r(0), g(0), b(0);
+	if (loc_scalar < 0.0) {
+		loc_scalar += int(loc_scalar - 1.0) * (-1.0);
+
+	}
+	else if (loc_scalar > 1.0) {
+		loc_scalar -= int(loc_scalar);
+
+	}
+
+	if (loc_scalar <= 0.5) {
+		b = (Uint8)((1.0 - 2.0 * loc_scalar) * 255.0);
+		if (loc_scalar >= 0.25)
+			g = (Uint8)((4.0 * loc_scalar - 1.0) * 255.0);
+	}
+	else {
+		r = (Uint8)((2.0 * loc_scalar - 1.0) * 255.0);
+		if (loc_scalar <= 0.75)
+			g = (Uint8)((3.0 - 4.0 * loc_scalar) * 255.0);
+	}
+	return A_MASK + (r << 16) + (g << 8) + b;
+}
+
+__global__ void copy_complex_board(thrust::complex<ge_d>* c1, thrust::complex<ge_d>* c2, 
+	void * pixel_surface, CudaSdlInterface::Parameter * param, CudaSdlInterface::NumberDrawParam* n_param)
 {
 	int id = threadIdx.x + blockIdx.x*blockDim.x;
 	if (id < param->size) {
 		//Uint32 p = colorFromComplexRatio(c1[id]);
-		Uint32 p = colorFromMultiComplex(c1[id], c2[id]);
+		Uint32 p = colorFromMultiComplex(c1[id], c2[id], n_param->complex_range);
 		setPixel(pixel_surface, id%param->w, id / param->w, param,  p);
 	}
 }
@@ -197,6 +224,15 @@ __global__ void copy_board(thrust::complex<ge_d>* dst, thrust::complex<ge_d>* sr
 
 }
 
+__global__ void copy_double_board(ge_d* val, void* pixel_surface, CudaSdlInterface::Parameter* param, CudaSdlInterface::NumberDrawParam* n_param)
+{
+	int id = threadIdx.x + blockIdx.x * blockDim.x;
+	if (id < param->size) {
+		Uint32 p = colorFromScalar(val[id], n_param->from, n_param->range);
+		setPixel(pixel_surface, id % param->w, id / param->w, param, p);
+	}
+}
+
 __device__ pos_d get_relative_position(const int& x, CudaSdlInterface::Parameter* param)
 {
 	pos_d p;
@@ -290,6 +326,36 @@ __global__ void invert_int_freq(FreqPick* int_freq, FreqPick* int_freq_last)
 	int_freq_last = tmp;
 }
 
+__global__ void vibration_model1(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata)
+{
+	int id = threadIdx.x + blockIdx.x * blockDim.x;
+	const ge_d sqrt2(1.4142135);
+	if (id < param->size) {
+		a[id] = 0.0;
+		int x(id % param->w), y(id / param->w), cur_pos;
+		for (int i = -1; i <= 1; i++) {
+			if (x + i >= 0 && x + i < param->w) for (int j = -1; j <= 1; j++) {
+				if (y + j >= 0 && y + j < param->h) {
+					if (i != 0 || j != 0) { // not the current element
+						if (i * i + j * j <= 1) { // one of the direct neighboring tile
+							cur_pos = (x + i) + (y + j) * param->w;
+							a[id] += h[cur_pos] - h[id];
+						}
+						else { // one of the corner tile
+							cur_pos = (x + i) + (y + j) * param->w;
+							a[id] += (h[cur_pos] - h[id])/sqrt2;
+						}
+					}
+				}
+			}
+		}
+		a[id] *= vdata->stiffness;
+		v[id] += a[id];
+		h[id] += v[id];
+		avg[id] = 0.9 * avg[id] + h[id];
+	}
+}
+
 CUDA_ERROR KernelCallers::check_exec(const std::string & s)
 {
 	cudaError_t cudaStatus = cudaGetLastError();
@@ -304,9 +370,10 @@ CUDA_ERROR KernelCallers::check_exec(const std::string & s)
 	return cudaStatus;
 }
 
-CUDA_ERROR KernelCallers::copyComplexBoard(thrust::complex<ge_d>* c1, thrust::complex<ge_d>* c2, void * pixel_surface, uint dimension, CudaSdlInterface::Parameter * param)
+CUDA_ERROR KernelCallers::copyComplexBoard(thrust::complex<ge_d>* c1, thrust::complex<ge_d>* c2, void * pixel_surface, 
+	uint dimension, CudaSdlInterface::Parameter * param, CudaSdlInterface::NumberDrawParam* n_param)
 {
-	copy_complex_board << < (dimension / THREADS_PER_BLOCK +1), THREADS_PER_BLOCK, 1 >>>(c1, c2, pixel_surface, param);
+	copy_complex_board << < (dimension / THREADS_PER_BLOCK +1), THREADS_PER_BLOCK, 1 >>>(c1, c2, pixel_surface, param, n_param);
 	return check_exec("copyComplexBoard");
 }
 
@@ -357,6 +424,12 @@ CUDA_ERROR KernelCallers::checkParam(CudaSdlInterface::Parameter* param)
 	return check_exec("checkParam");
 }
 
+CUDA_ERROR KernelCallers::copyDoubleBoard(ge_d* val, void* pixel_surface, uint dimension, CudaSdlInterface::Parameter* param, CudaSdlInterface::NumberDrawParam* n_param)
+{
+	copy_double_board << < (dimension / THREADS_PER_BLOCK + 1), THREADS_PER_BLOCK, 1 >> > (val, pixel_surface, param, n_param);
+	return check_exec("copyCompcopy_double_boardlexBoard");
+}
+
 CUDA_ERROR KernelFreq::drawFrequency(FreqPick* freq, thrust::complex<ge_d>* transform, thrust::complex<ge_d>* plan, uint dimension, FreqDrawerData* freq_data, CudaSdlInterface::Parameter* param)
 {
 	draw_frequency << < (dimension / THREADS_PER_BLOCK + 1), THREADS_PER_BLOCK, 1 >> > (freq, transform, plan, freq_data, param);
@@ -377,3 +450,8 @@ CUDA_ERROR KernelFreq::interpolateFreq(FreqPick* freq, FreqPick* int_freq, FreqP
 	return KernelCallers::check_exec("invert_int_freq");
 }
 
+CUDA_ERROR KernelVib::vibrationModel1(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, uint dimension, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata)
+{
+	vibration_model1 << < (dimension / THREADS_PER_BLOCK + 1), THREADS_PER_BLOCK, 1 >> > (a, v, h, avg, param, vdata);
+	return KernelCallers::check_exec("vibration_model1");
+}

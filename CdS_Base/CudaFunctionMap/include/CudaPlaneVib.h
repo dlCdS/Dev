@@ -4,6 +4,7 @@
 class CudaPlaneVib :
 	public CudaSdlInterface
 {
+public:
 	struct VibData {
 		ge_d stiffness;
 	};

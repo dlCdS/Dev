@@ -1,4 +1,5 @@
 #include "CudaPlaneVib.h"
+#include "KernelCudaSdl.h"
 
 CudaPlaneVib::CudaPlaneVib()
 {
@@ -82,9 +83,26 @@ ge_i CudaPlaneVib::addSource(const ge_pd& rel_pos)
 
 void CudaPlaneVib::setPosition(const ge_d& value, const ge_i& src_id)
 {
-	ge_i offset(_sources[src_id].offset*sizeof(ge_d));
-	CUDA_ERROR status = cudaMemcpy(d_h + offset, &value, sizeof(ge_d), cudaMemcpyHostToDevice);
+	ge_i offset(_sources[src_id].offset);
+	ge_d* d_hp = d_h + offset;
+	CUDA_ERROR status = cudaMemcpy(d_hp, &value, sizeof(ge_d), cudaMemcpyHostToDevice);
 	if (status != CUDA_SUCCESS) {
 		Log(LERROR, "Failed to copy src heigh ", src_id);
 	}
+}
+
+void CudaPlaneVib::draw()
+{
+	CUDA_ERROR cudaStatus;
+	KernelCallers::copyDoubleBoard(d_h, d_surface_pixel, _size.w * _size.h, d_sdl_param, d_num_param);
+	cudaStatus = copySurfaceToHost();
+	if (cudaStatus != CUDA_SUCCESS) {
+		Log(LERROR, "failed copySurfaceToHost");
+	}
+	_scw->updateTexture();
+}
+
+void CudaPlaneVib::mainLoop()
+{
+	KernelVib::vibrationModel1(d_a, d_v, d_h, d_avg, _size.w * _size.h, d_sdl_param, d_vdata);
 }

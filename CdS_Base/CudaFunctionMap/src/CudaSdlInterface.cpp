@@ -1,7 +1,7 @@
 #include "CudaSdlInterface.h"
 #include "KernelCudaSdl.h"
 
-CudaSdlInterface::CudaSdlInterface() : d_surface_pixel(NULL)
+CudaSdlInterface::CudaSdlInterface() : d_surface_pixel(NULL), d_num_param(NULL)
 {
 
 }
@@ -15,6 +15,18 @@ void CudaSdlInterface::setColourWidget(SetColourWidget * scw)
 {
 	VirtualModel::setColourWidget(scw);
 	setSurface(_scw->getSurface());
+}
+
+CUDA_ERROR CudaSdlInterface::setNumberDrawParam(const NumberDrawParam& param)
+{
+	CUDA_ERROR status;
+	if (d_num_param == NULL) {
+		status = cudaMallocErrorHandle((void**)&d_num_param, sizeof(NumberDrawParam), "d_num_param");
+	}
+	status = cudaMemcpy(d_num_param, &param, sizeof(NumberDrawParam), cudaMemcpyHostToDevice);
+	if (status != CUDA_SUCCESS)
+		Log(LERROR, "failed to copy d_num_param");
+	return status;
 }
 
 CUDA_ERROR CudaSdlInterface::setSurface(SDL_Surface * surface)
@@ -46,6 +58,8 @@ CUDA_ERROR CudaSdlInterface::setSurface(SDL_Surface * surface)
 		Log(LERROR, "failed to init device data");
 		return cudaStatus;
 	}
+
+	setNumberDrawParam();
 
 	return CUDA_SUCCESS;
 }
