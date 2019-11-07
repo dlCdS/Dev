@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Ressource_Provider>
+  <ressources name="NoName">
+    <animation>..\widgets\anim\defaultWidget.anim</animation>
+  </ressources>
+  <ressources name="NoName">
+    <animation>..\widgets\anim\defaultWidget.anim</animation>
+  </ressources>
+  <ressources name="NoName">
+    <animation>..\widgets\anim\defaultWidget.anim</animation>
+  </ressources>
+  <ressources name="Notarace">
+    <animation>..\widgets\anim\defaultWidget.anim</animation>
+  </ressources>
+</Ressource_Provider>
