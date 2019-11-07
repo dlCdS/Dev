@@ -72,3 +72,19 @@ CUDA_ERROR CudaPlaneVib::generate(const ge_d& stiffness)
 		return cudaStatus;
 	}
 }
+
+ge_i CudaPlaneVib::addSource(const ge_pd& rel_pos)
+{
+	ge_i x(ge_d(_size.w) * rel_pos.w), y(ge_d(_size.h) * rel_pos.h), offset(y*_size.w+x);
+	_sources.push_back({ rel_pos, offset });
+	return _sources.size() - 1;
+}
+
+void CudaPlaneVib::setPosition(const ge_d& value, const ge_i& src_id)
+{
+	ge_i offset(_sources[src_id].offset*sizeof(ge_d));
+	CUDA_ERROR status = cudaMemcpy(d_h + offset, &value, sizeof(ge_d), cudaMemcpyHostToDevice);
+	if (status != CUDA_SUCCESS) {
+		Log(LERROR, "Failed to copy src heigh ", src_id);
+	}
+}
