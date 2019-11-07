@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mainWindow scrollable="0" autoFeedLine="0" clickable="0" noChild="0" hasChanged="0" width="800" heigh="600" name="">
+  <layers>
+    <layer>
+      <listWidget scrollable="0" autoFeedLine="0" clickable="0" noChild="0" hasChanged="1">
+        <layers>
+          <layer>
+            <fitLineWidget scrollable="0" autoFeedLine="0" clickable="0" noChild="0" hasChanged="1">
+              <layers>
+                <layer>
+                  <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="80" heigh="80">
+                    <proportion>
+                      <pos width="-1" heigh="-1"/>
+                      <dim width="-1" heigh="-1"/>
+                    </proportion>
+                  </icon>
+                </layer>
+              </layers>
+              <proportion>
+                <pos width="-1" heigh="-1"/>
+                <dim width="1" heigh="-1"/>
+              </proportion>
+            </fitLineWidget>
+            <fitLineWidget scrollable="0" autoFeedLine="0" clickable="0" noChild="0" hasChanged="1">
+              <layers>
+                <layer>
+                  <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="80" heigh="80">
+                    <proportion>
+                      <pos width="-1" heigh="-1"/>
+                      <dim width="-1" heigh="-1"/>
+                    </proportion>
+                  </icon>
+                </layer>
+              </layers>
+              <proportion>
+                <pos width="-1" heigh="-1"/>
+                <dim width="1" heigh="-1"/>
+              </proportion>
+            </fitLineWidget>
+            <fitLineWidget scrollable="0" autoFeedLine="0" clickable="0" noChild="0" hasChanged="1">
+              <layers>
+                <layer>
+                  <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="80" heigh="80">
+                    <proportion>
+                      <pos width="-1" heigh="-1"/>
+                      <dim width="-1" heigh="-1"/>
+                    </proportion>
+                  </icon>
+                </layer>
+              </layers>
+              <proportion>
+                <pos width="-1" heigh="-1"/>
+                <dim width="1" heigh="-1"/>
+              </proportion>
+            </fitLineWidget>
+          </layer>
+        </layers>
+        <proportion>
+          <pos width="0.6" heigh="0"/>
+          <dim width="0.4" heigh="1"/>
+        </proportion>
+      </listWidget>
+      <gridWidget scrollable="0" autoFeedLine="0" curY="4" clickable="0" gridWidth="4" noChild="0" hasChanged="1" gridHeigh="4" curX="4">
+        <layers>
+          <layer>
+            <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="90" heigh="90">
+              <proportion>
+                <pos width="0" heigh="0"/>
+                <dim width="0.333333" heigh="0.25"/>
+              </proportion>
+            </icon>
+            <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="90" heigh="90">
+              <proportion>
+                <pos width="0.333333" heigh="0"/>
+                <dim width="0.333333" heigh="0.25"/>
+              </proportion>
+            </icon>
+            <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="90" heigh="90">
+              <proportion>
+                <pos width="0.666667" heigh="0"/>
+                <dim width="0.333333" heigh="0.25"/>
+              </proportion>
+            </icon>
+            <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="90" heigh="90">
+              <proportion>
+                <pos width="0" heigh="0.25"/>
+                <dim width="0.333333" heigh="0.25"/>
+              </proportion>
+            </icon>
+            <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="90" heigh="90">
+              <proportion>
+                <pos width="0.333333" heigh="0.25"/>
+                <dim width="0.333333" heigh="0.25"/>
+              </proportion>
+            </icon>
+            <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="90" heigh="90">
+              <proportion>
+                <pos width="0.666667" heigh="0.25"/>
+                <dim width="0.333333" heigh="0.25"/>
+              </proportion>
+            </icon>
+            <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="90" heigh="90">
+              <proportion>
+                <pos width="0" heigh="0.5"/>
+                <dim width="0.333333" heigh="0.25"/>
+              </proportion>
+            </icon>
+            <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="90" heigh="90">
+              <proportion>
+                <pos width="0.333333" heigh="0.5"/>
+                <dim width="0.333333" heigh="0.25"/>
+              </proportion>
+            </icon>
+            <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="90" heigh="90">
+              <proportion>
+                <pos width="0.666667" heigh="0.5"/>
+                <dim width="0.333333" heigh="0.25"/>
+              </proportion>
+            </icon>
+            <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="90" heigh="90">
+              <proportion>
+                <pos width="0" heigh="0.75"/>
+                <dim width="0.333333" heigh="0.25"/>
+              </proportion>
+            </icon>
+            <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="90" heigh="90">
+              <proportion>
+                <pos width="0.333333" heigh="0.75"/>
+                <dim width="0.333333" heigh="0.25"/>
+              </proportion>
+            </icon>
+            <icon scrollable="0" autoFeedLine="0" clickable="1" noChild="0" hasChanged="1" width="90" heigh="90">
+              <proportion>
+                <pos width="0.666667" heigh="0.75"/>
+                <dim width="0.333333" heigh="0.25"/>
+              </proportion>
+            </icon>
+          </layer>
+        </layers>
+        <proportion>
+          <pos width="0" heigh="0"/>
+          <dim width="0.6" heigh="1"/>
+        </proportion>
+      </gridWidget>
+    </layer>
+  </layers>
+  <proportion>
+    <pos width="0" heigh="0"/>
+    <dim width="1" heigh="1"/>
+  </proportion>
+</mainWindow>

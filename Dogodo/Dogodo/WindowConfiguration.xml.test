@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MainWindow autoFeedLine="0" clickable="0" noChild="0" width="1000" heigh="600" name="MainWindow">
+  <proportion>
+    <pos width="0" heigh="0"/>
+    <dim width="1" heigh="1"/>
+  </proportion>
+  <layers>
+    <layer>
+      <ContainerWidget autoFeedLine="0" clickable="0" noChild="0">
+        <proportion>
+          <pos width="0" heigh="0"/>
+          <dim width="1" heigh="1"/>
+        </proportion>
+        <layers>
+          <layer>
+            <listWidget autoFeedLine="0" clickable="0" noChild="0">
+              <proportion>
+                <pos width="0" heigh="0"/>
+                <dim width="1" heigh="-1"/>
+              </proportion>
+              <layers>
+                <layer>
+                  <TextFieldWidget autoFeedLine="1" clickable="0" str="Main" noChild="1">
+                    <proportion>
+                      <pos width="-1" heigh="-1"/>
+                      <dim width="1" heigh="-1"/>
+                    </proportion>
+                    <letterLib>..\data\textlib\mylib.xml</letterLib>
+                  </TextFieldWidget>
+                  <clickWidget autoFeedLine="0" clickable="1" noChild="0">
+                    <proportion>
+                      <pos width="-1" heigh="-1"/>
+                      <dim width="1" heigh="-1"/>
+                    </proportion>
+                    <layers>
+                      <layer>
+                        <TextFieldWidget autoFeedLine="1" clickable="0" str="Browse_Workspace" noChild="1">
+                          <proportion>
+                            <pos width="-1" heigh="-1"/>
+                            <dim width="-1" heigh="-1"/>
+                          </proportion>
+                          <letterLib>..\data\textlib\mylib.xml</letterLib>
+                        </TextFieldWidget>
+                      </layer>
+                    </layers>
+                  </clickWidget>
+                  <clickWidget autoFeedLine="0" clickable="1" noChild="0">
+                    <proportion>
+                      <pos width="-1" heigh="-1"/>
+                      <dim width="1" heigh="-1"/>
+                    </proportion>
+                    <layers>
+                      <layer>
+                        <TextFieldWidget autoFeedLine="1" clickable="0" str="Save" noChild="1">
+                          <proportion>
+                            <pos width="-1" heigh="-1"/>
+                            <dim width="-1" heigh="-1"/>
+                          </proportion>
+                          <letterLib>..\data\textlib\mylib.xml</letterLib>
+                        </TextFieldWidget>
+                      </layer>
+                    </layers>
+                  </clickWidget>
+                  <FieldWidget autoFeedLine="1" clickable="0" noChild="0">
+                    <proportion>
+                      <pos width="-1" heigh="-1"/>
+                      <dim width="1" heigh="-1"/>
+                    </proportion>
+                    <layers>
+                      <layer>
+                        <TextFieldWidget autoFeedLine="1" clickable="0" str="Workspace" noChild="1">
+                          <proportion>
+                            <pos width="-1" heigh="-1"/>
+                            <dim width="-1" heigh="-1"/>
+                          </proportion>
+                          <letterLib>..\data\textlib\mylib.xml</letterLib>
+                        </TextFieldWidget>
+                        <TextFieldWidget autoFeedLine="1" clickable="0" str="No Workspace defined..." noChild="1">
+                          <proportion>
+                            <pos width="-1" heigh="-1"/>
+                            <dim width="-1" heigh="-1"/>
+                          </proportion>
+                          <letterLib>..\data\textlib\mylib.xml</letterLib>
+                        </TextFieldWidget>
+                      </layer>
+                    </layers>
+                  </FieldWidget>
+                </layer>
+              </layers>
+            </listWidget>
+          </layer>
+        </layers>
+      </ContainerWidget>
+    </layer>
+  </layers>
+</MainWindow>
