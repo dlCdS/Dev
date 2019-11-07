@@ -9,7 +9,7 @@ CudaPlaneVib::~CudaPlaneVib()
 {
 }
 
-CUDA_ERROR CudaPlaneVib::generate(const ge_d& stiffness)
+CUDA_ERROR CudaPlaneVib::generate(const ge_d& stiffness, const ge_i& iteration)
 {
 	CUDA_ERROR cudaStatus;
 	ge_d* c = new ge_d[_size.w * _size.h];
@@ -62,6 +62,7 @@ CUDA_ERROR CudaPlaneVib::generate(const ge_d& stiffness)
 	}
 
 	vdata.stiffness = stiffness;
+	vdata.iteration = iteration;
 
 	cudaStatus = cudaMallocErrorHandle((void**)&d_vdata, sizeof(VibData), " d_vdata");
 	if (cudaStatus != CUDA_SUCCESS)
@@ -91,6 +92,16 @@ void CudaPlaneVib::setPosition(const ge_d& value, const ge_i& src_id)
 	}
 }
 
+void CudaPlaneVib::setPressure(const ge_d& value, const ge_i& src_id)
+{
+	ge_i offset(_sources[src_id].offset);
+	ge_d* d_ap = d_a + offset;
+	CUDA_ERROR status = cudaMemcpy(d_ap, &value, sizeof(ge_d), cudaMemcpyHostToDevice);
+	if (status != CUDA_SUCCESS) {
+		Log(LERROR, "Failed to copy src heigh ", src_id);
+	}
+}
+
 void CudaPlaneVib::draw()
 {
 	CUDA_ERROR cudaStatus;
@@ -104,5 +115,6 @@ void CudaPlaneVib::draw()
 
 void CudaPlaneVib::mainLoop()
 {
-	KernelVib::vibrationModel1(d_a, d_v, d_h, d_avg, _size.w * _size.h, d_sdl_param, d_vdata);
+	for(int i=0; i<vdata.iteration; i++)
+		KernelVib::vibrationModel1(d_a, d_v, d_h, d_avg, _size.w * _size.h, d_sdl_param, d_vdata);
 }

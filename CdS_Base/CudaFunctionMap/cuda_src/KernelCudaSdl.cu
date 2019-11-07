@@ -331,7 +331,6 @@ __global__ void vibration_model1(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, CudaSdlIn
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	const ge_d sqrt2(1.4142135);
 	if (id < param->size) {
-		a[id] = 0.0;
 		int x(id % param->w), y(id / param->w), cur_pos;
 		for (int i = -1; i <= 1; i++) {
 			if (x + i >= 0 && x + i < param->w) for (int j = -1; j <= 1; j++) {
@@ -349,10 +348,11 @@ __global__ void vibration_model1(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, CudaSdlIn
 				}
 			}
 		}
-		a[id] *= vdata->stiffness;
-		v[id] += a[id];
-		h[id] += v[id];
+		a[id] /= (4.0+2.0*sqrt2);
+		v[id] += a[id]*vdata->stiffness;
+		h[id] += v[id]*vdata->stiffness;
 		avg[id] = 0.9 * avg[id] + h[id];
+		a[id] = 0.0;
 	}
 }
 

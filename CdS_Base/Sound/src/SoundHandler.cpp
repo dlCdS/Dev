@@ -157,7 +157,7 @@ AnalysedFArray* SoundHandler::consumme()
 				id = i;
 			}
 		}
-		dbg_out << id << std::endl;
+		// dbg_out << id << std::endl;
 		
 		AnalysedFArray* freq = &sample[current].freq;
 		sample[current].computed = false;

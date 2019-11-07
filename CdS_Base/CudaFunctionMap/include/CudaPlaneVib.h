@@ -7,15 +7,17 @@ class CudaPlaneVib :
 public:
 	struct VibData {
 		ge_d stiffness;
+		ge_i iteration;
 	};
 
 	CudaPlaneVib();
 	virtual ~CudaPlaneVib();
 
-	virtual CUDA_ERROR generate(const ge_d& stiffness);
+	virtual CUDA_ERROR generate(const ge_d& stiffness, const ge_i &iteration);
 
 	ge_i addSource(const ge_pd& rel_pos);
 	void setPosition(const ge_d& value, const ge_i& src_id);
+	void setPressure(const ge_d& value, const ge_i& src_id);
 
 protected:
 

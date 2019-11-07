@@ -17,10 +17,10 @@ ContainerWidget* maindisplay;
 
 // SDL Configuration
 
-const ge_i frame_duration = 40;
+const ge_i frame_duration = 1;
 const ge_i frame_rate = 1;
 const ge_i size = 200;
-const ge_pi wsize = { 200, 200 };
+const ge_pi wsize = { 201, 201};
 const ge_i factor = 1;
 const ge_d ratio = 0.5;
 const ge_d rotate = -45.0;
@@ -217,14 +217,14 @@ void vibrationModel() {
 
 	vibModel.setColourWidget(scw);
 
-	vibModel.generate(0.01);
+	vibModel.generate(0.1, 1);
 
 	vibModel.addSource({ 0.5, 0.5 });
 }
 
 bool vibrationModelLoop() {
-	static ge_d freq(0.001), t(0.0);
-	ge_d h(cos(freq * t));
+	static ge_d freq(2000.0), t(0.0);
+	ge_d h(cos(2.0*M_PI/freq * t));
 	t += 1.0;
 	vibModel.setPosition(h, 0);
 	vibModel.cycle();
