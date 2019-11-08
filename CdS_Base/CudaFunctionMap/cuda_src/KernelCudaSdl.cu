@@ -326,14 +326,15 @@ __global__ void invert_int_freq(FreqPick* int_freq, FreqPick* int_freq_last)
 	int_freq_last = tmp;
 }
 
-__global__ void vibration_model1(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata)
+__global__ void vibration_model1_acceleration(ge_d* a, ge_d* h, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
-	const ge_d sqrt2(1.4142135);
+	const ge_d sqrt2(1.4142136);
 	if (id < param->size) {
 		int x(id % param->w), y(id / param->w), cur_pos;
 		for (int i = -1; i <= 1; i++) {
-			if (x + i >= 0 && x + i < param->w) for (int j = -1; j <= 1; j++) {
+			if (x + i >= 0 && x + i < param->w) 
+			for (int j = -1; j <= 1; j++) {
 				if (y + j >= 0 && y + j < param->h) {
 					if (i != 0 || j != 0) { // not the current element
 						if (i * i + j * j <= 1) { // one of the direct neighboring tile
@@ -348,10 +349,16 @@ __global__ void vibration_model1(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, CudaSdlIn
 				}
 			}
 		}
-		a[id] /= (4.0+2.0*sqrt2);
-		v[id] += a[id]*vdata->stiffness;
-		h[id] += v[id]*vdata->stiffness;
-		avg[id] = 0.9 * avg[id] + h[id];
+		a[id] /= (8.0+4.0*sqrt2);
+	}
+}
+
+__global__ void vibration_model1_position(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata)
+{
+	int id = threadIdx.x + blockIdx.x * blockDim.x;
+	if (id < param->size) {
+		v[id] += a[id] * vdata->stiffness;
+		h[id] += v[id];
 		a[id] = 0.0;
 	}
 }
@@ -452,6 +459,10 @@ CUDA_ERROR KernelFreq::interpolateFreq(FreqPick* freq, FreqPick* int_freq, FreqP
 
 CUDA_ERROR KernelVib::vibrationModel1(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, uint dimension, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata)
 {
-	vibration_model1 << < (dimension / THREADS_PER_BLOCK + 1), THREADS_PER_BLOCK, 1 >> > (a, v, h, avg, param, vdata);
-	return KernelCallers::check_exec("vibration_model1");
+	vibration_model1_acceleration << < (dimension / THREADS_PER_BLOCK + 1), THREADS_PER_BLOCK, 1 >> > (a, h, param, vdata);
+	CUDA_ERROR status = KernelCallers::check_exec("vibration_model1_acceleration");
+	if (status != CUDA_SUCCESS)
+		return status;
+	vibration_model1_position << < (dimension / THREADS_PER_BLOCK + 1), THREADS_PER_BLOCK, 1 >> > (a, v, h, avg, param, vdata);
+	return KernelCallers::check_exec("vibration_model1_position");
 }

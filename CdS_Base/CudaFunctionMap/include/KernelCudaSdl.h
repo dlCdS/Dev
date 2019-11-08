@@ -78,7 +78,10 @@ namespace KernelFreq {
 	CUDA_ERROR interpolateFreq(FreqPick* freq, FreqPick* int_freq, FreqPick* int_freq_last, uint dimension, CudaSdlInterface::Parameter* param, FreqDrawerData* freq_data);
 }
 
-__global__ void vibration_model1(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata);
+__global__ void vibration_model1_acceleration(ge_d* a, ge_d* h, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata);
+
+
+__global__ void vibration_model1_position(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata);
 
 namespace KernelVib {
 	CUDA_ERROR vibrationModel1(ge_d *a, ge_d *v, ge_d *h, ge_d *avg, uint dimension, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData *vdata);

@@ -10,6 +10,7 @@
 #include <SoundHandler.h>
 #include <SdlSound.h>
 #include <CudaPlaneVib.h>
+#include <CudaAnalyticalVib.h>
 
 bool done = false;
 
@@ -17,10 +18,10 @@ ContainerWidget* maindisplay;
 
 // SDL Configuration
 
-const ge_i frame_duration = 1;
+const ge_i frame_duration = -1;
 const ge_i frame_rate = 1;
 const ge_i size = 200;
-const ge_pi wsize = { 201, 201};
+const ge_pi wsize = { 1001, 1001};
 const ge_i factor = 1;
 const ge_d ratio = 0.5;
 const ge_d rotate = -45.0;
@@ -86,6 +87,7 @@ CudaFractalModel sdlInterface;
 CudaFreqDrawer freqDrawer;
 SoundHandler sp;
 CudaPlaneVib  vibModel;
+CudaAnalyticalVib anaVib;
 
 
 void cudaFractalLoop();
@@ -217,23 +219,33 @@ void vibrationModel() {
 
 	vibModel.setColourWidget(scw);
 
-	vibModel.generate(0.1, 1);
+	vibModel.generate(1.0, 1);
 
-	vibModel.addSource({ 0.5, 0.5 });
+	vibModel.addSource({ 0.501, 0.501 });
 }
 
 bool vibrationModelLoop() {
-	static ge_d freq(2000.0), t(0.0);
+	static ge_d t(0.0);
+	const ge_d freq(300.0), amp(1.0);
+	Clocks::start("vib init");
 	ge_d h(cos(2.0*M_PI/freq * t));
 	t += 1.0;
-	vibModel.setPosition(h, 0);
+	vibModel.setPressure(amp*h, 0);
+	Clocks::stop("vib init");
 	vibModel.cycle();
 	return false;
 }
 
  // #define TEST_SP_MODEL
+// #define ANA_VIB
 
 int main(int argc, char* argv[]) {
+
+#ifdef ANA_VIB
+	anaVib.testIntegration();
+
+	return 0;
+#endif
 		
 	initGraphicalEngine();
 

@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\CudaAnalyticalVib.h" />
     <ClInclude Include="include\CudaConfiguration.h" />
     <ClInclude Include="include\CudaFractalModel.h" />
     <ClInclude Include="include\CudaFreqDrawer.h" />
@@ -19,6 +20,7 @@
     <ClInclude Include="include\KernelCudaSdl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CudaAnalyticalVib.cpp" />
     <ClCompile Include="src\CudaFractalModel.cpp" />
     <ClCompile Include="src\CudaFreqDrawer.cpp" />
     <ClCompile Include="src\CudaPlaneVib.cpp" />

@@ -104,6 +104,7 @@ void CudaPlaneVib::setPressure(const ge_d& value, const ge_i& src_id)
 
 void CudaPlaneVib::draw()
 {
+	Clocks::start("CudaPlaneVib draw");
 	CUDA_ERROR cudaStatus;
 	KernelCallers::copyDoubleBoard(d_h, d_surface_pixel, _size.w * _size.h, d_sdl_param, d_num_param);
 	cudaStatus = copySurfaceToHost();
@@ -111,10 +112,13 @@ void CudaPlaneVib::draw()
 		Log(LERROR, "failed copySurfaceToHost");
 	}
 	_scw->updateTexture();
+	Clocks::stop("CudaPlaneVib draw");
 }
 
 void CudaPlaneVib::mainLoop()
-{
+{ 
+	Clocks::start("CudaPlaneVib loop");
 	for(int i=0; i<vdata.iteration; i++)
 		KernelVib::vibrationModel1(d_a, d_v, d_h, d_avg, _size.w * _size.h, d_sdl_param, d_vdata);
+	Clocks::stop("CudaPlaneVib loop");
 }

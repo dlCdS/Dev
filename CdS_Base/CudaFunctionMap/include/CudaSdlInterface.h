@@ -25,7 +25,7 @@ public:
 	virtual ~CudaSdlInterface();
 
 	virtual void setColourWidget(SetColourWidget* scw);
-	CUDA_ERROR setNumberDrawParam(const NumberDrawParam& param = { -2.0, 4.0, 255.0 });
+	CUDA_ERROR setNumberDrawParam(const NumberDrawParam& param = { -0.1, 0.2, 255.0 });
 
 	CUDA_ERROR testMemcpy();
 
