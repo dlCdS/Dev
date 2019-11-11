@@ -31,6 +31,7 @@ const bool play_sound = false;
 
 // #define FRACTAL
 #define VIBRATION
+#define ANA_VIB
 
 bool step();
 
@@ -49,6 +50,7 @@ void initGraphicalEngine() {
 
 bool cudaFreqLoop();
 bool vibrationModelLoop();
+bool vibrationAnaLoop();
 
 void GraphicalLoop() {
    	GE::AddWidgetToWindow(maindisplay);
@@ -56,7 +58,9 @@ void GraphicalLoop() {
 	while (!done) {
 		Clocks::start("main loop");
 		Clocks::start("tested_model");
-#ifdef FRACTAL
+#ifdef ANA_VIB
+		done = vibrationAnaLoop();
+#elif defined FRACTAL
 		done = step();
 #elif defined VIBRATION
 		done = vibrationModelLoop();
@@ -236,20 +240,55 @@ bool vibrationModelLoop() {
 	return false;
 }
 
+
+void vibrationAna() {
+	anaVib.setSize({ wsize.w, wsize.h }, factor);
+
+	SetColourWidget* scw = new SetColourWidget();
+
+	maindisplay->addWidget(scw);
+
+	anaVib.setColourWidget(scw);
+
+	anaVib.generate(1.0, 1);
+	anaVib.set(0.0, 100.0, 20);
+	anaVib.setNumberDrawParam({ -5.0, 10.0, 255.0 });
+
+	anaVib.addSource({ 0.501, 0.501 });
+}
+
+bool vibrationAnaLoop() {
+	static ge_d t(0.0);
+	const ge_d freq(300.0), amp(1.0);
+	Clocks::start("vib init");
+	ge_d h(cos(2.0 * M_PI / freq * t));
+	t += 1.0;
+	Clocks::stop("vib init");
+
+	static ge_i count(0);
+	static ge_d s(10.0);
+	s+=0.01;
+	std::cout << s << std::endl;;
+	anaVib.set(t, 100.0, s);
+
+	anaVib.cycle();
+	return false;
+}
+
+
  // #define TEST_SP_MODEL
-// #define ANA_VIB
+ #define ANA_VIB
 
 int main(int argc, char* argv[]) {
 
-#ifdef ANA_VIB
-	anaVib.testIntegration();
 
-	return 0;
-#endif
 		
 	initGraphicalEngine();
-
-#ifdef FRACTAL
+#ifdef ANA_VIB
+	//anaVib.testIntegration();
+	//return 0;
+	vibrationAna();
+#elif define FRACTAL
 	cudaFractalModel();
 #elif defined VIBRATION
 	vibrationModel();

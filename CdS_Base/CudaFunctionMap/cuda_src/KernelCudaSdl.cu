@@ -243,6 +243,12 @@ __device__ pos_d get_relative_position(const int& x, CudaSdlInterface::Parameter
 	return p;
 }
 
+void get_abs_position(const int& id, ge_i &x, ge_i& y, CudaSdlInterface::Parameter* param)
+{
+	x = id % param->w;
+	y = id / param->w;
+}
+
 __global__ void draw_frequency(FreqPick *freq, thrust::complex<ge_d>* transform, thrust::complex<ge_d>* plan, FreqDrawerData* freq_data, CudaSdlInterface::Parameter * param)
 {
 	int id = threadIdx.x + blockIdx.x*blockDim.x;
@@ -363,6 +369,28 @@ __global__ void vibration_model1_position(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, 
 	}
 }
 
+__global__ void ana_vibration_model1(thrust::complex<ge_d> * cur, ge_d* h, CudaSdlInterface::Parameter* param, CudaAnalyticalVib::AnaVibData* avdata)
+{
+	int id = threadIdx.x + blockIdx.x * blockDim.x;
+	if (id < param->size) { 
+		ge_i x, y, range(3);
+		get_abs_position(id, x, y, param);
+		((ge_d*)(&cur[id]))[0] = 0.0;
+		((ge_d*)(&cur[id]))[1] = 0.0;
+
+		for (int j = -range; j <= range; j++) {
+			for (int i = -range; i <= range; i++) {
+				ge_d phi = (x + ge_d(j * param->w) - param->w / 2) * (x + ge_d(j * param->w) - param->w / 2) + (y + ge_d(i * param->h) - param->h / 2) * (y + ge_d(i * param->h) - param->h / 2);
+				phi = sqrt(phi);
+				cur[id] += thrust::polar(1.0, -2 * M_PI / avdata->period * avdata->time + phi / avdata->speed);
+			}
+
+		}
+
+		h[id] = ((ge_d*)(&cur[id]))[0];
+	}
+}
+
 CUDA_ERROR KernelCallers::check_exec(const std::string & s)
 {
 	cudaError_t cudaStatus = cudaGetLastError();
@@ -465,4 +493,14 @@ CUDA_ERROR KernelVib::vibrationModel1(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, uint
 		return status;
 	vibration_model1_position << < (dimension / THREADS_PER_BLOCK + 1), THREADS_PER_BLOCK, 1 >> > (a, v, h, avg, param, vdata);
 	return KernelCallers::check_exec("vibration_model1_position");
+}
+
+CUDA_ERROR KernelVib::anaVibrationModel1(thrust::complex<ge_d> * cur, ge_d* h, uint dimension, CudaSdlInterface::Parameter* param, CudaAnalyticalVib::AnaVibData* avdata)
+{
+	ana_vibration_model1 << < (dimension / THREADS_PER_BLOCK + 1), THREADS_PER_BLOCK, 1 >> > (cur, h, param, avdata);
+	CUDA_ERROR status = KernelCallers::check_exec("ana_vibration_model1");
+	if (status != CUDA_SUCCESS)
+		return status;
+
+	return status;
 }

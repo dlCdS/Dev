@@ -30,6 +30,9 @@
     <CudaCompile Include="cuda_src\kernel.cu" />
     <CudaCompile Include="cuda_src\KernelCudaSdl.cu" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{00E42442-E77E-4A8C-92F6-F28FE403CFC2}</ProjectGuid>
     <RootNamespace>CudaFunctionMap</RootNamespace>

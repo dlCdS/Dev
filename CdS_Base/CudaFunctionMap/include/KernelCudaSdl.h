@@ -1,7 +1,7 @@
 #pragma once
 #include "CudaFreqDrawer.h"
 #include <SoundHandler.h>
-#include "CudaPlaneVib.h"
+#include "CudaAnalyticalVib.h"
 
 struct pos_d {
 	ge_d w, h;
@@ -61,6 +61,8 @@ namespace KernelCallers { // KernelCallers
 
 __device__ pos_d get_relative_position(const int& x, CudaSdlInterface::Parameter* param);
 
+__device__ void get_abs_position(const int& id, ge_i &x, ge_i &y, CudaSdlInterface::Parameter* param);
+
 __global__ void draw_frequency(FreqPick *freq, thrust::complex<ge_d> * transform, thrust::complex<ge_d>* plan, FreqDrawerData* freq_data, CudaSdlInterface::Parameter *param);
 
 __global__ void to_freq_array(Complex* lbuffer, Complex* rbuffer, struct FreqPick* freq);
@@ -82,7 +84,11 @@ __global__ void vibration_model1_acceleration(ge_d* a, ge_d* h, CudaSdlInterface
 
 
 __global__ void vibration_model1_position(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata);
+ 
+__global__ void ana_vibration_model1(thrust::complex<ge_d>* cur, ge_d* h, CudaSdlInterface::Parameter* param, CudaAnalyticalVib::AnaVibData* avdata);
 
 namespace KernelVib {
 	CUDA_ERROR vibrationModel1(ge_d *a, ge_d *v, ge_d *h, ge_d *avg, uint dimension, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData *vdata);
+
+	CUDA_ERROR anaVibrationModel1(thrust::complex<ge_d>* cur, ge_d* h, uint dimension, CudaSdlInterface::Parameter* param, CudaAnalyticalVib::AnaVibData* avdata);
 }
