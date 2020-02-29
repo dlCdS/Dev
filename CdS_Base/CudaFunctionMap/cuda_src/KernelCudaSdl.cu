@@ -101,6 +101,23 @@ __device__ Uint32 colorFromScalar(const ge_d& scalar, const ge_d& from, const ge
 	return A_MASK + (r << 16) + (g << 8) + b;
 }
 
+__device__ Uint32 colorFromScalarBlackWhite(const ge_d& scalar, const ge_d& from, const ge_d& range)
+{
+	ge_d loc_scalar((scalar - from + range/2) / range*2.0);
+	Uint8 w(0);
+	if (loc_scalar < 0.0) loc_scalar *= -1.0;
+
+	if (loc_scalar>1.0) {
+		w = 0.0;
+	}
+	else {
+		loc_scalar = 255.0 * (1.0 - loc_scalar);
+		w = loc_scalar;
+	}
+	
+	return A_MASK + (w << 16) + (w << 8) + w;
+}
+
 __global__ void copy_complex_board(thrust::complex<ge_d>* c1, thrust::complex<ge_d>* c2, 
 	void * pixel_surface, CudaSdlInterface::Parameter * param, CudaSdlInterface::NumberDrawParam* n_param)
 {
@@ -228,7 +245,7 @@ __global__ void copy_double_board(ge_d* val, void* pixel_surface, CudaSdlInterfa
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	if (id < param->size) {
-		Uint32 p = colorFromScalar(val[id], n_param->from, n_param->range);
+		Uint32 p = colorFromScalarBlackWhite(val[id], n_param->from, n_param->range);
 		setPixel(pixel_surface, id % param->w, id / param->w, param, p);
 	}
 }

@@ -17,6 +17,8 @@ __device__ Uint32 colorFromMultiComplex(const thrust::complex<ge_d>& c1, const t
 
 __device__ Uint32 colorFromScalar(const ge_d& scalar, const ge_d& from, const ge_d& range);
 
+__device__ Uint32 colorFromScalarBlackWhite(const ge_d& scalar, const ge_d& center, const ge_d& range);
+
 __global__ void copy_complex_board(thrust::complex<ge_d> * c1, thrust::complex<ge_d>* c2, 
 	void *pixel_surface, CudaSdlInterface::Parameter *param, CudaSdlInterface::NumberDrawParam* n_param);
 
