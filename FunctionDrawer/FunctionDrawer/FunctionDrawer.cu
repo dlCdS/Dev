@@ -30,8 +30,8 @@ const ge_pd center = { -0.0, 1.0 };
 const bool play_sound = false;
 
 // #define FRACTAL
-#define VIBRATION
-#define ANA_VIB
+//#define VIBRATION
+//#define ANA_VIB
 
 bool step();
 
@@ -170,6 +170,7 @@ void cudaFreqDrawer() {
    //  sine10to2kLtoR
    // sound\\overkill_190303.wav
 	std::string filename = "E:\\Programmes\\VS2017\\CdS_Data\\FunctionDrawer\\Data\\sound\\Ferme.wav";
+	filename = "E:\\Ableton\\Export\\Moodz_201009.wav";
 	//std::string filename = "E:\\Programmes\\VS2017\\CdS_Data\\FunctionDrawer\\Data\\sine\\sine10to2kLtoR.wav";
 
 	SetColourWidget* scw = new SetColourWidget();
@@ -266,7 +267,7 @@ bool vibrationAnaLoop() {
 	Clocks::stop("vib init");
 
 	static ge_i count(0);
-	static ge_d s(5.5);
+	static ge_d s(20.5);
 	s*=1.0003;
 	// std::cout << s << std::endl;;
 	anaVib.set(t, 100.0, s);
@@ -276,8 +277,8 @@ bool vibrationAnaLoop() {
 }
 
 
- // #define TEST_SP_MODEL
- #define ANA_VIB
+ #define TEST_SP_MODEL
+ // #define ANA_VIB
 
 int main(int argc, char* argv[]) {
 
