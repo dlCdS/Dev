@@ -29,7 +29,7 @@ const ge_pd center = { -0.0, 1.0 };
 
 const bool play_sound = false;
 
-// #define FRACTAL
+//#define FRACTAL
 #define VIBRATION
 #define ANA_VIB
 
