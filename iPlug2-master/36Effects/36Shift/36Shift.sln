@@ -1,15 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IPlugEffect-app", "projects\IPlugEffect-app.vcxproj", "{41785AE4-5B70-4A75-880B-4B418B4E13C6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "36Shift-app", "projects\IPlugEffect-app.vcxproj", "{41785AE4-5B70-4A75-880B-4B418B4E13C6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509} = {68A5DD20-7057-448B-8FE0-B6AC8D205509}
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IPlugEffect-vst2", "projects\IPlugEffect-vst2.vcxproj", "{2EB4846A-93E0-43A0-821E-12237105168F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "36Shift-vst2", "projects\IPlugEffect-vst2.vcxproj", "{2EB4846A-93E0-43A0-821E-12237105168F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509} = {68A5DD20-7057-448B-8FE0-B6AC8D205509}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IPlugEffect-vst3", "projects\IPlugEffect-vst3.vcxproj", "{079FC65A-F0E5-4E97-B318-A16D1D0B89DF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IPlugEffect-aax", "projects\IPlugEffect-aax.vcxproj", "{DC4B5920-933D-4C82-B842-F34431D55A93}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundTouch", "..\..\36Common\soundtouch\source\SoundTouch\SoundTouch.vcxproj", "{68A5DD20-7057-448B-8FE0-B6AC8D205509}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +77,18 @@ Global
 		{DC4B5920-933D-4C82-B842-F34431D55A93}.Tracer|Win32.Build.0 = Tracer|Win32
 		{DC4B5920-933D-4C82-B842-F34431D55A93}.Tracer|x64.ActiveCfg = Tracer|x64
 		{DC4B5920-933D-4C82-B842-F34431D55A93}.Tracer|x64.Build.0 = Tracer|x64
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509}.Debug|Win32.ActiveCfg = Debug|Win32
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509}.Debug|Win32.Build.0 = Debug|Win32
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509}.Debug|x64.ActiveCfg = Debug|x64
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509}.Debug|x64.Build.0 = Debug|x64
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509}.Release|Win32.ActiveCfg = Release|Win32
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509}.Release|Win32.Build.0 = Release|Win32
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509}.Release|x64.ActiveCfg = Release|x64
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509}.Release|x64.Build.0 = Release|x64
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509}.Tracer|Win32.ActiveCfg = Debug|Win32
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509}.Tracer|Win32.Build.0 = Debug|Win32
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509}.Tracer|x64.ActiveCfg = Debug|x64
+		{68A5DD20-7057-448B-8FE0-B6AC8D205509}.Tracer|x64.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

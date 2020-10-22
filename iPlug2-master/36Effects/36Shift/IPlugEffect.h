@@ -2,6 +2,7 @@
 
 #include "IPlug_include_in_plug_hdr.h"
 #include "IControls.h"
+#include "..\36Common\soundtouch\include\SoundTouch.h"
 
 #include "..\36Common\Math36.h"
 
@@ -66,4 +67,6 @@ private:
 
   Math36::AllpassFilter allpf0, allpf1;
   Math36::QSO qso1, qso2;
+
+  soundtouch::SoundTouch _soundtouch;
 };
