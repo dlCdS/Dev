@@ -1,5 +1,7 @@
 @echo off
-set git_bash="C:\Program Files\Git\bin\sh.exe"
+
+call git.bat
+
 
 %git_bash% -c "git pull origin master"
 

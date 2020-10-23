@@ -1,5 +1,6 @@
 @echo off
-set git_bash="C:\Program Files\Git\bin\sh.exe"
+
+call git.bat
 
 call cleanup.bat
 
