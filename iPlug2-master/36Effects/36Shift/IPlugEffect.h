@@ -32,6 +32,7 @@ public:
 
 #if IPLUG_DSP // http://bit.ly/2S64BDd
   void ProcessBlock(sample** inputs, sample** outputs, int nFrames) override;
+  void OnReset() override;
 
   void TransformFFT(sample** inputs, sample** outputs, int nFrames);
 
@@ -42,10 +43,15 @@ public:
 #endif
 private:
 
+  void setSoundTouch();
+
   void testPlug();
 
   sample buffer[2][maxBuffSize],
     sigCont[2];
+
+  soundtouch::SAMPLETYPE  buffer_l[maxBuffSize],
+    buffer_r[maxBuffSize];
   double phaseCont[maxBuffSize];
   CArray carray_l,
     carray_r;
@@ -68,5 +74,6 @@ private:
   Math36::AllpassFilter allpf0, allpf1;
   Math36::QSO qso1, qso2;
 
-  soundtouch::SoundTouch _soundtouch;
+  soundtouch::SoundTouch _soundtouch[2];
+  bool _stconfigured;
 };

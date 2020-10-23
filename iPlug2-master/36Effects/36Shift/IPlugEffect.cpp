@@ -4,11 +4,11 @@
 #include <fstream>
 
 
-IPlugEffect::IPlugEffect(const InstanceInfo& info)
-: Plugin(info, MakeConfig(kNumParams, kNumPrograms))
+IPlugEffect::IPlugEffect(const InstanceInfo& info) 
+: Plugin(info, MakeConfig(kNumParams, kNumPrograms)), _stconfigured(false)
 {
-  GetParam(kShift)->InitDouble("Shift", 0.0, 0.0, 3000, 0.01, "hz");
-  GetParam(kMode)->InitEnum("Type", 0, 2, "", IParam::kFlagsNone, "", "Weaver", "Single SSB");
+  GetParam(kShift)->InitDouble("Shift", 1.0, 0.0, 2.0, 0.01, "hz");
+  GetParam(kMode)->InitEnum("Type", 0, 3, "", IParam::kFlagsNone, "", "Weaver", "Single SSB", "FFT");
 
   GetParam(kLowShift)->InitDouble("Low Shift", 0.0, 0.0, 25000.0, 30.0, "hz");
   GetParam(kHighShift)->InitDouble("High Shift", 25000.0, 0.0, 25000.0, 30.0);
@@ -112,8 +112,12 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames) {
   if (lastShift != shift) {
     lastShift = shift;
     shiftChanged = true;
+    _stconfigured = false;
   }
   else shiftChanged = false;
+
+  setSoundTouch();
+
   type = GetParam(kMode)->Value();
   lowShift = GetParam(kLowShift)->Value();
   highShift = GetParam(kHighShift)->Value();
@@ -127,9 +131,17 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames) {
   case 1:
     SingleSSB(inputs, outputs, nFrames);
     break;
+  case 2:
+    TransformFFT(inputs, outputs, nFrames);
+    break;
   default:
     break;
   }
+}
+
+void IPlugEffect::OnReset()
+{
+  _stconfigured = false;
 }
 
 
@@ -150,22 +162,6 @@ void IPlugEffect::TransformFFT(sample** inputs, sample** outputs, int nFrames)
   Math36::fft(carray_l, nFrames);
   Math36::fft(carray_r, nFrames);
 
-  //hilbert(carray_l, nFrames);
-  //hilbert(carray_r, nFrames);
-
-  // Convert in polar
-  for (int x = 0; x < nFrames / 2; x++) {
-
-    carray_l[x].imag(carray_l[x].imag() *shift);
-    carray_r[x].imag(carray_r[x].imag() * shift);
-
-    parray_l[x] = { std::norm(carray_l[x]) / sqrt(2.0 * nFrames) / nFrames, std::arg(carray_l[x]) };
-    parray_r[x] = { std::norm(carray_r[x]) / sqrt(2.0 * nFrames) / nFrames, std::arg(carray_r[x]) };
-  }
-
-
-  // Shifting Part
-
   /// FFT approach
   
   const float freqoffsets = 2.0 * PI / nFrames;
@@ -173,39 +169,35 @@ void IPlugEffect::TransformFFT(sample** inputs, sample** outputs, int nFrames)
   bool out_of_buf;
   
   for (int frame = 0; frame < nFrames; frame++) {
-    out_of_buf = (frame < nFrames / shift);
-    out_of_buf = true;
-    if (out_of_buf) {
-      outputs[0][frame] = 0.5 * carray_l[0].real();
-      outputs[1][frame] = 0.5 * carray_r[0].real();
-    }
-    else {
-      outputs[0][frame] = 0.0;
-      outputs[1][frame] = 0.0;
-    }
+    buffer[0][frame] = 0.5 * carray_l[0].real();
+    buffer[1][frame] = 0.5 * carray_r[0].real();
       float arg;
     for (int x = 1; x < nFrames / 2; x++) {
-      cur_freq = Math36::getFred(frame, nFrames, sampleRate);
-      if (out_of_buf) {
-        arg = freqoffsets * x * frame;
-
-        outputs[0][frame] += carray_l[x].real() *cos(arg) - carray_l[x].imag() * sin(arg);
-        outputs[1][frame] += carray_r[x].real() *cos(arg) - carray_r[x].imag() * sin(arg);
-      }
-      else {
         arg = freqoffsets * x * frame * shift;
 
-        outputs[0][frame] += parray_l[x].norm * cos(arg + parray_l[x].arg);
-        outputs[1][frame] += parray_r[x].norm * cos(arg + parray_r[x].arg);
-      }
+        buffer_l[frame] += carray_l[x].real() *cos(arg) - carray_l[x].imag() * sin(arg);
+        buffer_r[frame] += carray_r[x].real() *cos(arg) - carray_r[x].imag() * sin(arg);
+
     }
-    if (out_of_buf) {
-      outputs[0][frame] *= normfactor;
-      outputs[1][frame] *= normfactor;
-      /*for(int i=0;i<2;i++){
-        if (outputs[i][frame] > 1.0 || outputs[i][frame] < -1.0)
-          outputs[i][frame] = 0.0;
-      } */
+
+    buffer_l[frame] *= normfactor;
+    buffer_r[frame] *= normfactor;
+
+    _soundtouch[0].putSamples(buffer_l, nFrames);
+    _soundtouch[1].putSamples(buffer_r, nFrames);
+
+    int nSamples;
+     do
+      {
+        nSamples = _soundtouch[0].receiveSamples(buffer_l, nFrames);
+     } while (nSamples != 0);
+     do
+     {
+       nSamples = _soundtouch[1].receiveSamples(buffer_r, nFrames);
+     } while (nSamples != 0);
+     for (int i = 0; i < nFrames; i++) {
+       outputs[0][i] = buffer_l[i];
+       outputs[1][i] = buffer_r[i];
     }
   }
   
@@ -343,6 +335,31 @@ void IPlugEffect::AllpassSSB(sample** inputs, sample** outputs, int nFrames)
 
 const std::string file_path = "E:\\Libraries\\iPlug2-master\\36Effects\\36Shift\\build-win\\test.txt";
 
+void IPlugEffect::setSoundTouch()
+{
+  if (!_stconfigured) {
+    bool forSpeech(false);
+    _stconfigured = true;
+    for(int i=0; i<2; i++) {
+      _soundtouch[i].setSampleRate(GetSampleRate());
+      _soundtouch[i].setChannels(1);
+      _soundtouch[i].setTempoChange(1.0 / shift * 100.0);
+
+      _soundtouch[i].setSetting(SETTING_USE_QUICKSEEK, false);
+      _soundtouch[i].setSetting(SETTING_USE_AA_FILTER, true);
+
+      if (forSpeech)
+      {
+        // use settings for speech processing
+        _soundtouch[i].setSetting(SETTING_SEQUENCE_MS, 40);
+        _soundtouch[i].setSetting(SETTING_SEEKWINDOW_MS, 15);
+        _soundtouch[i].setSetting(SETTING_OVERLAP_MS, 8);
+        fprintf(stderr, "Tune processing parameters for speech processing.\n");
+      }
+    }
+  }
+}
+
 void IPlugEffect::testPlug()
 {
   std::fstream file(file_path, std::ios::out | std::ios::trunc);
@@ -352,9 +369,6 @@ void IPlugEffect::testPlug()
     gate_s = 300,
     gate_e = 0;
   sample** inputs, ** outputs;
-
-
-
 
   outputs = new sample * [2];
   inputs = new sample * [2];
