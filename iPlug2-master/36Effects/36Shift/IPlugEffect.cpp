@@ -169,11 +169,11 @@ void IPlugEffect::TransformFFT(sample** inputs, sample** outputs, int nFrames)
   bool out_of_buf;
   
   for (int frame = 0; frame < nFrames; frame++) {
-    buffer[0][frame] = 0.5 * carray_l[0].real();
-    buffer[1][frame] = 0.5 * carray_r[0].real();
+    buffer_l[frame] = 0.5 * carray_l[0].real();
+    buffer_r[frame] = 0.5 * carray_r[0].real();
       float arg;
     for (int x = 1; x < nFrames / 2; x++) {
-        arg = freqoffsets * x * frame * shift;
+        arg = freqoffsets * x * frame;
 
         buffer_l[frame] += carray_l[x].real() *cos(arg) - carray_l[x].imag() * sin(arg);
         buffer_r[frame] += carray_r[x].real() *cos(arg) - carray_r[x].imag() * sin(arg);
@@ -186,19 +186,23 @@ void IPlugEffect::TransformFFT(sample** inputs, sample** outputs, int nFrames)
     _soundtouch[0].putSamples(buffer_l, nFrames);
     _soundtouch[1].putSamples(buffer_r, nFrames);
 
-    int nSamples;
+    int nSamples, current(0);
      do
       {
         nSamples = _soundtouch[0].receiveSamples(buffer_l, nFrames);
+        for(int i=current; i<current+nSamples && i<nFrames; i++)
+          outputs[0][i] = buffer_l[i-current];
+        current += nSamples;
      } while (nSamples != 0);
+     current = 0;
      do
      {
        nSamples = _soundtouch[1].receiveSamples(buffer_r, nFrames);
+       for (int i = current; i < current + nSamples && i < nFrames; i++)
+         outputs[1][i] = buffer_r[i - current];
+       current += nSamples;
      } while (nSamples != 0);
-     for (int i = 0; i < nFrames; i++) {
-       outputs[0][i] = buffer_l[i];
-       outputs[1][i] = buffer_r[i];
-    }
+     
   }
   
   /*
@@ -343,7 +347,9 @@ void IPlugEffect::setSoundTouch()
     for(int i=0; i<2; i++) {
       _soundtouch[i].setSampleRate(GetSampleRate());
       _soundtouch[i].setChannels(1);
-      _soundtouch[i].setTempoChange(1.0 / shift * 100.0);
+      _soundtouch[i].setPitchSemiTones(shift);
+      _soundtouch[i].setTempoChange(0.0);
+      _soundtouch[i].setRateChange(0.0);
 
       _soundtouch[i].setSetting(SETTING_USE_QUICKSEEK, false);
       _soundtouch[i].setSetting(SETTING_USE_AA_FILTER, true);
