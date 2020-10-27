@@ -30,6 +30,62 @@ namespace Math36 {
   namespace {
     double sample_rate;
   }
+
+  class Derivative {
+  public:
+    Derivative();
+    ~Derivative();
+
+    double get() const;
+    double get(const double& next_value);
+    void next(const double& next_value);
+    bool setTimestep(const double& time_step);
+
+    static double Derive(const double& x1, const double& x2, const double& timestep);
+
+  protected:
+    double last, value, timestep;
+    bool first_use;
+  };
+
+  class Integral {
+  public:
+    enum Method {
+      TRAP = 0
+    };
+    Integral();
+    ~Integral();
+
+    double get() const;
+    double get(const double& next_value);
+    virtual void next(const double& next_value);
+    bool setTimestep(const double& time_step);
+
+  protected:
+    double last, value, timestep;
+    bool first_use;
+
+
+  };
+
+  class PID {
+  public:
+    PID();
+    ~PID();
+
+    double get() const;
+    double get(const double& next_value, const double& feedback = 0.0);
+    virtual void next(const double& next_value, const double& feedback=0.0);
+    bool setTimestep(const double& time_step);
+    bool setPID(const double& p, const double& i, const double& d);
+
+  protected:
+    double last, value;
+
+    double P, I, D;
+    Integral xint;
+    Derivative xder;
+  };
   
   class Filter {
   public:

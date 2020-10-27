@@ -159,3 +159,137 @@ double Math36::QSO::getFreq() const
 {
   return _real_freq;
 }
+
+Math36::Derivative::Derivative() : last(0.0), value(0.0), timestep(1.0), first_use(true)
+{
+}
+
+Math36::Derivative::~Derivative()
+{
+}
+
+double Math36::Derivative::get() const
+{
+  return value;
+}
+
+double Math36::Derivative::get(const double& next_value)
+{
+  next(next_value);
+  return value;
+}
+
+void Math36::Derivative::next(const double& next_value)
+{
+  if (first_use) {
+    last = next_value;
+    value = 0.0;
+    first_use = false;
+  }
+  else {
+    value = (next_value - last) / timestep;
+    last = next_value;
+  }
+}
+
+bool Math36::Derivative::setTimestep(const double& time_step)
+{
+  if(time_step != 0.0) {
+    timestep = time_step;
+    return true;
+  }
+  return false;
+}
+
+double Math36::Derivative::Derive(const double& x1, const double& x2, const double& timestep)
+{
+  if (timestep != 0.0) {
+    return (x2 - x1) / timestep;
+  }
+  return 0.0;
+}
+
+Math36::Integral::Integral() : last(0.0), value(0.0), timestep(1.0), first_use(true)
+{
+}
+
+Math36::Integral::~Integral()
+{
+}
+
+double Math36::Integral::get() const
+{
+  return value;;
+}
+
+double Math36::Integral::get(const double& next_value)
+{
+  next(next_value);
+  return value;
+}
+
+void Math36::Integral::next(const double& next_value)
+{
+  if (first_use) {
+    last = next_value;
+    value = 0.0;
+    first_use = false;
+  }
+  else {
+    value = (next_value + last) / 2.0 * timestep;
+    last = next_value;
+  }
+}
+
+bool Math36::Integral::setTimestep(const double& time_step)
+{
+  if (time_step != 0.0) {
+    timestep = time_step;
+    return true;
+  }
+  return false;
+}
+
+Math36::PID::PID() : last(0.0), value(0.0), P(.5), I(.8), D(0.2)
+{
+}
+
+Math36::PID::~PID()
+{
+}
+
+double Math36::PID::get() const
+{
+  return value;
+}
+
+double Math36::PID::get(const double& next_value, const double& feedback)
+{
+  next(next_value, feedback);
+  return value;
+}
+
+void Math36::PID::next(const double& next_value, const double& feedback)
+{
+  double loc(next_value - feedback);
+  xint.next(loc);
+  xder.next(loc);
+  value = P *( loc + xint.get() / I + D * xder.get());
+}
+
+bool Math36::PID::setTimestep(const double& time_step)
+{
+  if (xder.setTimestep(time_step))
+    if (xint.setTimestep(time_step))
+      return true;
+  return false;
+}
+
+bool Math36::PID::setPID(const double& p, const double& i, const double& d)
+{
+  P = p;
+  D = d;
+  if (i != 0.0) I = i;
+  else return false;
+  return true;
+}
