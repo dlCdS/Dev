@@ -293,3 +293,42 @@ bool Math36::PID::setPID(const double& p, const double& i, const double& d)
   else return false;
   return true;
 }
+
+Math36::AudioDb::AudioDb() : value(0.0), ratio(0.0), ponder(0.0), db(0.0), xn_1(0.0), yn_1(0.0)
+{
+  setRatio(0.9);
+}
+
+Math36::AudioDb::~AudioDb()
+{
+}
+
+bool Math36::AudioDb::setRatio(const double& new_ratio)
+{
+  if (ratio >= 0.0 && ratio < 1.0) {
+    ratio = new_ratio;
+    ponder = 1.0 / (1.0 - ratio);
+    return true;
+  }
+  return false;
+}
+
+double Math36::AudioDb::get() const
+{
+  return db;
+}
+
+double Math36::AudioDb::get(const double& next_value)
+{
+  next(next_value);
+  return get();
+}
+
+void Math36::AudioDb::next(const double& next_value)
+{
+  /// DC block for 0 centering
+  yn_1 = next_value - xn_1 + 0.999 * yn_1;
+  xn_1 = next_value;
+  value = abs(yn_1) + value * ratio;
+  db = 20 * log10(value);
+}

@@ -86,6 +86,19 @@ namespace Math36 {
     Integral xint;
     Derivative xder;
   };
+
+  class AudioDb { 
+    AudioDb();
+    ~AudioDb();
+
+    bool setRatio(const double& ratio);
+    double get() const;
+    double get(const double& next_value);
+    virtual void next(const double& next_value);
+
+  protected:
+    double value, ratio, ponder, db, xn_1, yn_1;
+  };
   
   class Filter {
   public:
@@ -95,6 +108,7 @@ namespace Math36 {
     Complex _pole;
     double _pnorm;
   };
+
 
   class AllpassFilter : public Filter {
   public:
