@@ -39,5 +39,6 @@ private:
   Math36::PID _pid[2];
 
   double last_out[2];
+  Math36::AudioDb _audiodb[2];
   
 };

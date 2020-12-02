@@ -87,7 +87,8 @@ namespace Math36 {
     Derivative xder;
   };
 
-  class AudioDb { 
+  class AudioDb {
+  public:
     AudioDb();
     ~AudioDb();
 

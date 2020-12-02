@@ -330,5 +330,5 @@ void Math36::AudioDb::next(const double& next_value)
   yn_1 = next_value - xn_1 + 0.999 * yn_1;
   xn_1 = next_value;
   value = abs(yn_1) + value * ratio;
-  db = 20 * log10(value);
+  db = 20 * log10(value/2.0);
 }

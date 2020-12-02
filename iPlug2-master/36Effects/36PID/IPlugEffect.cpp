@@ -79,7 +79,7 @@ IPlugEffect::IPlugEffect(const InstanceInfo& info)
   
 
 #endif
-  testPlug();
+  //testPlug();
 }
 
 
@@ -99,7 +99,12 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames) {
     for (int j = 0; j < 2; j++){
       //outputs[j][i] = last_out[j];
       last_out[j] = _pid[j].get(inputs[j][i], last_out[j]);
-      outputs[j][i]= last_out[j];
+
+      if (_audiodb[j].get(last_out[j]) > 0.0)
+        last_out[j] = 0.0;
+      outputs[j][i] = last_out[j];
+      
+        
     }
   }
   
