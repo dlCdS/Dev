@@ -27,6 +27,7 @@ enum EParams
   dGrid,
   dStart,
   dSize,
+  dZoom,
   kNumParams
 };
 
@@ -40,6 +41,24 @@ enum EControlTags
 using namespace iplug;
 using namespace igraphics;
 
+const double TempoDivisonToDouble[] =
+{
+  0.0625,   // 1 sixty fourth of a beat
+  0.125,       // 1 thirty second of a beat
+  0.166666,      // 1 sixteenth note tripet
+  0.25,       // 1 sixteenth note
+  0.333333,      // 1 dotted sixteenth note
+  0.5,        // 1 eigth note
+  0.625,       // 1 dotted eigth note
+  0.666666,       // 1 eigth note tripet
+  1.0,        // 1 quater note a.k.a 1 beat @ 4/4
+  1.5,       // 1 dotted beat @ 4/4
+  2.0,        // 2 beats @ 4/4
+  4.0,          // 1 bar @ 4/4
+  8.0,          // 2 bars @ 4/4
+  16.0,          // 4 bars @ 4/4
+  32.0          // 8 bars @ 4/4
+};
 
 
 class IPlugEffect final : public Plugin

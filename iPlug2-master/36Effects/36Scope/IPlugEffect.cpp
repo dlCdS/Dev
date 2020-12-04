@@ -11,11 +11,11 @@ const std::string test_file2 = file_path + "test2.txt";
 
 
   double getStatR(const double& x, IPlugEffect* plug) {
-    return plug->buffer[0][int(x * 1000 / 1.2)];
+    return plug->buffer[0][int(x * (double) maxScopeBuffSize)];
   }
 
   double getStatL(const double& x, IPlugEffect* plug) {
-    return plug->buffer[1][int(x * 1000 / 1.2)];
+    return plug->buffer[1][int(x * (double) maxScopeBuffSize)];
   }
 
 
@@ -26,7 +26,7 @@ atStartCount(0), start(0.0), size(1.0)
 {
   for (int s = 0; s < maxScopeBuffSize; s++) {
     for (int i = 0; i < 2; i++) {
-      buffer[i][s] = 0.0;
+      buffer[i][s] = 0.5;
     }
   }
 
@@ -36,11 +36,9 @@ atStartCount(0), start(0.0), size(1.0)
   //GetParam(limiterType)->InitEnum("Limiter type", 0, 2, "", IParam::kFlagsNone, "", "Mr", "Tr");
   // GetParam(dGrid)->InitEnum("Rate", 8, { LFO_TEMPODIV_VALIST });
   GetParam(dGrid)->InitEnum("LFO Rate", LFO<>::k1, { LFO_TEMPODIV_VALIST });
-  GetParam(dStart)->InitDouble("start", 210, 1, 300, 0.001);
-  GetParam(dSize)->InitDouble("size", 210, 1, 300, 0.001);
-
-
-  
+  GetParam(dStart)->InitDouble("start", 0., 0., 1., 0.001);
+  GetParam(dSize)->InitDouble("size", 1., 0., 1., 0.001);
+  GetParam(dZoom)->InitDouble("zoom", 1., 0., 30, 0.001);
 
 
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
@@ -159,6 +157,7 @@ atStartCount(0), start(0.0), size(1.0)
 
       pGraphics->AttachControl(new IVKnobControl(cell(0, 2).GetMidVPadded(buttonSize), dStart, "start", style, false), kNoTag, "vcontrols");
       pGraphics->AttachControl(new IVKnobControl(cell(0, 3).GetMidVPadded(buttonSize), dSize, "size", style, false), kNoTag, "vcontrols");
+      pGraphics->AttachControl(new IVKnobControl(cell(0, 4).GetMidVPadded(buttonSize), dZoom, "zoom", style, false), kNoTag, "vcontrols");
 
 
 
@@ -203,8 +202,8 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
   
 
   double bpm = GetParam(dBpm)->Value(),
-    grid = GetParam(dGrid)->Value();
-  lfo.SetQNScalarFromDivision(static_cast<int>(grid));
+    grid = TempoDivisonToDouble[(int)GetParam(dGrid)->Value()];
+  double zoom = GetParam(dZoom)->Value();
   
   start = GetParam(dStart)->Value();
   size = GetParam(dSize)->Value();
@@ -213,15 +212,17 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
     if (atStartCount < 100) atStartCount++;
     else if (displayCount % 1 == 0) GetUI()->SetAllControlsDirty();
 
-  double relpos;
+  double relpos, min_relpos(start), max_relpos(start + (1.0 - start) * size);
   
   if (nChans == 2) {
     for (int s = 0; s < nFrames; s++) {
       for (int i = 0; i < nChans; i++) {
-        relpos = double((samplePos + s) % (samplesPerBeat )) / samplesPerBeat;
+        relpos = double((samplePos + s) % int(grid * samplesPerBeat)) / grid / samplesPerBeat;
+        if (relpos >= min_relpos && relpos < max_relpos) {
+          buffer[i][int((relpos - min_relpos)/(max_relpos-min_relpos) * (double) maxScopeBuffSize)] = outputs[i][s]*zoom;
+        }
         outputs[i][s] = inputs[i][s];
 
-        buffer[i][s] = inputs[i][s];
       }
     }
   } else { // Mono
