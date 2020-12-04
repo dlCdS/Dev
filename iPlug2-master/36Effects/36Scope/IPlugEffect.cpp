@@ -11,11 +11,11 @@ const std::string test_file2 = file_path + "test2.txt";
 
 
   double getStatR(const double& x, IPlugEffect* plug) {
-    return plug->buffer[0][int(x*70)];
+    return plug->buffer[0][int(x * 1000 / 1.2)];
   }
 
   double getStatL(const double& x, IPlugEffect* plug) {
-    return plug->buffer[1][int(x*70)];
+    return plug->buffer[1][int(x * 1000 / 1.2)];
   }
 
 
@@ -35,7 +35,7 @@ atStartCount(0), start(0.0), size(1.0)
   GetParam(dBpm)->InitDouble("bpm", 210, 50, 300, 0.001);
   //GetParam(limiterType)->InitEnum("Limiter type", 0, 2, "", IParam::kFlagsNone, "", "Mr", "Tr");
   // GetParam(dGrid)->InitEnum("Rate", 8, { LFO_TEMPODIV_VALIST });
-  GetParam(dGrid)->InitEnum("Limiter type", 3, 5, "", IParam::kFlagsNone, "", "1/8", "1/4", "1/2", "1", "2");
+  GetParam(dGrid)->InitEnum("LFO Rate", LFO<>::k1, { LFO_TEMPODIV_VALIST });
   GetParam(dStart)->InitDouble("start", 210, 1, 300, 0.001);
   GetParam(dSize)->InitDouble("size", 210, 1, 300, 0.001);
 
@@ -200,9 +200,12 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
   int samplesPerBeat = (int)GetSamplesPerBeat();
   int samplePos = (int)GetSamplePos();
 
+  
 
   double bpm = GetParam(dBpm)->Value(),
     grid = GetParam(dGrid)->Value();
+  lfo.SetQNScalarFromDivision(static_cast<int>(grid));
+  
   start = GetParam(dStart)->Value();
   size = GetParam(dSize)->Value();
 
@@ -210,11 +213,14 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
     if (atStartCount < 100) atStartCount++;
     else if (displayCount % 1 == 0) GetUI()->SetAllControlsDirty();
 
+  double relpos;
   
   if (nChans == 2) {
     for (int s = 0; s < nFrames; s++) {
       for (int i = 0; i < nChans; i++) {
+        relpos = double((samplePos + s) % (samplesPerBeat )) / samplesPerBeat;
         outputs[i][s] = inputs[i][s];
+
         buffer[i][s] = inputs[i][s];
       }
     }

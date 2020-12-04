@@ -13,7 +13,7 @@ const int kNumPrograms = 1;
 /// barbuffer = bartime * samplerate
 /// maxbuffer = maxbar [2] * 60 / min_bpm [50] * max_samplerate [98000]
 /// maxbuffer = 235200
-const int maxScopeBuffSize = 235200; // 800;
+const int maxScopeBuffSize = 1000; // 800;
 // const int maxBuffSize = 2 * PLUG_LATENCY;
 const int displayLoop = 50;
 
