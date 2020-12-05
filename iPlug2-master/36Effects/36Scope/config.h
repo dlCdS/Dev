@@ -25,22 +25,22 @@
 #define PLUG_DOES_MPE 0
 #define PLUG_DOES_STATE_CHUNKS 0
 #define PLUG_HAS_UI 1
-#define PLUG_WIDTH 640
-#define PLUG_HEIGHT 400
+#define PLUG_WIDTH 1200
+#define PLUG_HEIGHT 800
 #define PLUG_FPS 60
 #define PLUG_SHARED_RESOURCES 0
 #define PLUG_HOST_RESIZE 0
 
 #define AUV2_ENTRY IPlugEffect_Entry
-#define AUV2_ENTRY_STR "IPlugEffect_Entry"
+#define AUV2_ENTRY_STR "36Scope_Entry"
 #define AUV2_FACTORY IPlugEffect_Factory
 #define AUV2_VIEW_CLASS IPlugEffect_View
-#define AUV2_VIEW_CLASS_STR "IPlugEffect_View"
+#define AUV2_VIEW_CLASS_STR "36Scope_View"
 
 #define AAX_TYPE_IDS 'EFN1', 'EFN2'
 #define AAX_TYPE_IDS_AUDIOSUITE 'EFA1', 'EFA2'
 #define AAX_PLUG_MFR_STR "36"
-#define AAX_PLUG_NAME_STR "IPlugEffect\nIPEF"
+#define AAX_PLUG_NAME_STR "36Scope\nIPEF"
 #define AAX_PLUG_CATEGORY_STR "Effect"
 #define AAX_DOES_AUDIOSUITE 1
 

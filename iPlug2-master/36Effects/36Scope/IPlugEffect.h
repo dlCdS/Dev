@@ -23,11 +23,11 @@ const bool testPlugin = false;
 
 enum EParams
 {
-  dBpm,
   dGrid,
   dStart,
   dSize,
   dZoom,
+  dChannel,
   kNumParams
 };
 
@@ -86,7 +86,7 @@ private:
   int displayCount, atStartCount;
 
 public:
-  double start, size;
+  double start, size, old_zoom;
 
   bool UIClosed, isInit;
   sample buffer[2][maxScopeBuffSize];

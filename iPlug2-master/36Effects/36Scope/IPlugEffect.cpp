@@ -22,7 +22,7 @@ const std::string test_file2 = file_path + "test2.txt";
 
 IPlugEffect::IPlugEffect(const InstanceInfo& info)
 : Plugin(info, MakeConfig(kNumParams, kNumPrograms)), UIClosed(true), displayCount(0), isInit(false),
-atStartCount(0), start(0.0), size(1.0)
+atStartCount(0), start(0.0), size(1.0), old_zoom(1.0)
 {
   for (int s = 0; s < maxScopeBuffSize; s++) {
     for (int i = 0; i < 2; i++) {
@@ -32,13 +32,14 @@ atStartCount(0), start(0.0), size(1.0)
 
 
 
-  GetParam(dBpm)->InitDouble("bpm", 210, 50, 300, 0.001);
+  //GetParam(dBpm)->InitDouble("bpm", 210, 50, 300, 0.001);
   //GetParam(limiterType)->InitEnum("Limiter type", 0, 2, "", IParam::kFlagsNone, "", "Mr", "Tr");
   // GetParam(dGrid)->InitEnum("Rate", 8, { LFO_TEMPODIV_VALIST });
   GetParam(dGrid)->InitEnum("LFO Rate", LFO<>::k1, { LFO_TEMPODIV_VALIST });
-  GetParam(dStart)->InitDouble("start", 0., 0., 1., 0.001);
-  GetParam(dSize)->InitDouble("size", 1., 0., 1., 0.001);
-  GetParam(dZoom)->InitDouble("zoom", 1., 0., 30, 0.001);
+  GetParam(dStart)->InitDouble("Start", 0., 0., 1., 0.001);
+  GetParam(dSize)->InitDouble("Size", 1., 0., 1., 0.001);
+  GetParam(dZoom)->InitDouble("Zoom", 1., 0., 10, 0.001);
+  GetParam(dChannel)->InitEnum("Channel", 0, 4, "", IParam::kFlagsNone, "", "L+R", "Mono", "L", "R");
 
 
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
@@ -111,8 +112,8 @@ atStartCount(0), start(0.0), size(1.0)
 
     const IText forkAwesomeText{ 20.f, "ForkAwesome" };
 
-    const int nRows = 5;
-    const int nCols = 6;
+    const int nRows = 10;
+    const int nCols = 12;
 
     int cellIdx = -1;
 
@@ -151,23 +152,24 @@ atStartCount(0), start(0.0), size(1.0)
     
     
 
-      pGraphics->AttachControl(new ICaptionControl(cell(0, 0).GetMidVPadded(buttonSize), dBpm, IText(24.f), IColor(255, 255, 200, 100), false), kNoTag, "vcontrols");
+      //pGraphics->AttachControl(new ICaptionControl(cell(0, 0).GetMidVPadded(buttonSize), dBpm, IText(24.f), IColor(255, 255, 200, 100), false), kNoTag, "vcontrols");
       // pGraphics->AttachControl(new ICaptionControl(sameCell().SubRectVertical(4, 1).GetMidVPadded(10.f), kParamGain, IText(24.f), DEFAULT_FGCOLOR, false), kNoTag, "misccontrols");
-      pGraphics->AttachControl(new IVKnobControl(cell(0, 1).GetMidVPadded(buttonSize), dGrid, "grid", style, false), kNoTag, "vcontrols");
+      pGraphics->AttachControl(new IVKnobControl(cell(0, 0).GetMidVPadded(buttonSize), dGrid, "Grid", style, false), kNoTag, "vcontrols");
 
-      pGraphics->AttachControl(new IVKnobControl(cell(0, 2).GetMidVPadded(buttonSize), dStart, "start", style, false), kNoTag, "vcontrols");
-      pGraphics->AttachControl(new IVKnobControl(cell(0, 3).GetMidVPadded(buttonSize), dSize, "size", style, false), kNoTag, "vcontrols");
-      pGraphics->AttachControl(new IVKnobControl(cell(0, 4).GetMidVPadded(buttonSize), dZoom, "zoom", style, false), kNoTag, "vcontrols");
+      pGraphics->AttachControl(new IVKnobControl(cell(0, 1).GetMidVPadded(buttonSize), dStart, "Start", style, false), kNoTag, "vcontrols");
+      pGraphics->AttachControl(new IVKnobControl(cell(0, 2).GetMidVPadded(buttonSize), dSize, "Size", style, false), kNoTag, "vcontrols");
+      pGraphics->AttachControl(new IVKnobControl(cell(0, 3).GetMidVPadded(buttonSize), dZoom, "Zoom", style, false), kNoTag, "vcontrols");
+      pGraphics->AttachControl(new IVKnobControl(cell(0, 4).GetMidVPadded(buttonSize), dChannel, "Channel", style, false), kNoTag, "vcontrols");
 
 
 
       // Curve box
-      pGraphics->AttachControl(new IVPlotControl(cell(1, 0).Union(cell(4, 5)), {
+      pGraphics->AttachControl(new IVPlotControl(cell(1, 0).Union(cell(nRows-1, nCols-1)), {
                                                               {COLOR_BLUE, [&](double x) { return getStatR(x, this); } },
                                                               {COLOR_RED, [&](double x) { return getStatL(x, this); } }
 
 
-        }, 32, "IVPlotControl", style.WithShowLabel(false).WithDrawFrame(true)), kNoTag, "vcontrols");
+        }, maxScopeBuffSize, "IVPlotControl", style.WithShowLabel(false).WithDrawFrame(true)), kNoTag, "vcontrols");
       // Sliders
       int gfromr = 2;
 
@@ -201,9 +203,17 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 
   
 
-  double bpm = GetParam(dBpm)->Value(),
-    grid = TempoDivisonToDouble[(int)GetParam(dGrid)->Value()];
+  double grid = TempoDivisonToDouble[(int)GetParam(dGrid)->Value()];
   double zoom = GetParam(dZoom)->Value();
+
+  if (zoom != old_zoom)
+    if (nChans == 2)
+      for (int s = 0; s < maxScopeBuffSize; s++)
+        for (int i = 0; i < nChans; i++)
+          buffer[i][s] = buffer[i][s] / old_zoom * zoom;
+  old_zoom = zoom;
+
+  int chan = GetParam(dChannel)->Value();
   
   start = GetParam(dStart)->Value();
   size = GetParam(dSize)->Value();
@@ -213,21 +223,41 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
     else if (displayCount % 1 == 0) GetUI()->SetAllControlsDirty();
 
   double relpos, min_relpos(start), max_relpos(start + (1.0 - start) * size);
+  int pos;
   
   if (nChans == 2) {
     for (int s = 0; s < nFrames; s++) {
       for (int i = 0; i < nChans; i++) {
         relpos = double((samplePos + s) % int(grid * samplesPerBeat)) / grid / samplesPerBeat;
         if (relpos >= min_relpos && relpos < max_relpos) {
-          buffer[i][int((relpos - min_relpos)/(max_relpos-min_relpos) * (double) maxScopeBuffSize)] = outputs[i][s]*zoom;
+          pos = int((relpos - min_relpos) / (max_relpos - min_relpos) * (double)maxScopeBuffSize);
+          buffer[i][pos] = outputs[i][s]*zoom;
+
+          
+
+
         }
         outputs[i][s] = inputs[i][s];
 
+      }
+      if (chan != 0) {
+        if (chan == 1) {
+          buffer[0][pos] += buffer[1][pos];
+          buffer[0][pos] /= 2.0;
+        }
+        else if (chan == 2) {}
+        else if (chan == 3) {
+          buffer[0][pos] = buffer[1][pos];
+        }
+
+        buffer[1][pos] = 2.0 * zoom;
       }
     }
   } else { // Mono
 
   }
+
+  
 
   mOutSender.ProcessBlock(outputs, nFrames, kCtrlTagOutput);
   //mLimSender.ProcessBlock(outputs, nFrames, kCtrlTagLim);
