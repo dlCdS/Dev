@@ -11,14 +11,34 @@ const std::string test_file2 = file_path + "test2.txt";
 
 
   double getStatR(const double& x, IPlugEffect* plug) {
-    return plug->buffer[0][int(x * (double) maxScopeBuffSize)];
+    if (plug->printR)
+      return plug->buffer[0][int(x * (double)maxScopeBuffSize)];
+    else return 10.0;
   }
 
   double getStatL(const double& x, IPlugEffect* plug) {
+    if (plug->printL)
     return plug->buffer[1][int(x * (double) maxScopeBuffSize)];
+    else return 10.0;
   }
 
+  double getMono(const double& x, IPlugEffect* plug) {
+    if (plug->printMono)
+    return plug->mono[int(x * (double)maxScopeBuffSize)];
+    else return 10.0;
+  }
 
+  double getFull(const double& x, IPlugEffect* plug) {
+    return plug->phantom[0][int(x * (double)maxScopeBuffSize)] + plug->phantom[1][int(x * (double)maxScopeBuffSize)];
+  }
+
+  double getWindow(const double& x, IPlugEffect* plug) {
+    if (x < plug->start)
+      return 10.;
+    else if (x < plug->start + plug->size)
+      return -10.;
+    else return 10.;
+  }
 
 IPlugEffect::IPlugEffect(const InstanceInfo& info)
 : Plugin(info, MakeConfig(kNumParams, kNumPrograms)), UIClosed(true), displayCount(0), isInit(false),
@@ -38,8 +58,8 @@ atStartCount(0), start(0.0), size(1.0), old_zoom(1.0)
   GetParam(dGrid)->InitEnum("LFO Rate", LFO<>::k1, { LFO_TEMPODIV_VALIST });
   GetParam(dStart)->InitDouble("Start", 0., 0., 1., 0.001);
   GetParam(dSize)->InitDouble("Size", 1., 0., 1., 0.001);
-  GetParam(dZoom)->InitDouble("Zoom", 1., 0., 10, 0.001);
-  GetParam(dChannel)->InitEnum("Channel", 0, 4, "", IParam::kFlagsNone, "", "L+R", "Mono", "L", "R");
+  GetParam(dZoom)->InitDouble("Zoom", 1., 0., 15., 0.001);
+  GetParam(dChannel)->InitEnum("Channel", 0, 5, "", IParam::kFlagsNone, "", "L+R", "L+R+Mono", "Mono", "L", "R");
 
 
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
@@ -165,11 +185,18 @@ atStartCount(0), start(0.0), size(1.0), old_zoom(1.0)
 
       // Curve box
       pGraphics->AttachControl(new IVPlotControl(cell(1, 0).Union(cell(nRows-1, nCols-1)), {
-                                                              {COLOR_BLUE, [&](double x) { return getStatR(x, this); } },
-                                                              {COLOR_RED, [&](double x) { return getStatL(x, this); } }
+                                                              {COLOR_BLUE, [&](double x) { return getStatL(x, this); } },
+                                                              {COLOR_RED, [&](double x) { return getStatR(x, this); } },
+                                                              {COLOR_BLACK, [&](double x) { return getMono(x, this); } }
 
 
         }, maxScopeBuffSize, "IVPlotControl", style.WithShowLabel(false).WithDrawFrame(true)), kNoTag, "vcontrols");
+      pGraphics->AttachControl(new IVPlotControl(cell(0, 5).Union(cell(0, nCols - 1)), {
+                                                              {COLOR_BLACK, [&](double x) { return getFull(x, this); } },
+                                                              {COLOR_WHITE, [&](double x) { return getWindow(x, this); } }
+
+
+        }, maxScopeBuffSize, "IVPlotControl", style.WithShowLabel(false).WithDrawFrame(true), -2., 2.), kNoTag, "vcontrols");
       // Sliders
       int gfromr = 2;
 
@@ -202,57 +229,93 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
   int samplePos = (int)GetSamplePos();
 
   
+  //samplesPerBeat = 512;
 
   double grid = TempoDivisonToDouble[(int)GetParam(dGrid)->Value()];
   double zoom = GetParam(dZoom)->Value();
+  zoom *= zoom;
 
   if (zoom != old_zoom)
     if (nChans == 2)
       for (int s = 0; s < maxScopeBuffSize; s++)
-        for (int i = 0; i < nChans; i++)
+        for (int i = 0; i < nChans; i++){
           buffer[i][s] = buffer[i][s] / old_zoom * zoom;
+          phantom[i][s] = phantom[i][s] / old_zoom * zoom;
+          mono[s] = mono[s] / old_zoom * zoom;
+        }
   old_zoom = zoom;
 
   int chan = GetParam(dChannel)->Value();
+
+  switch (chan)
+  {
+  case 0:
+    printMono = false;
+    printL = true;
+    printR = true;
+    break;
+  case 1:
+    printMono = true;
+    printL = true;
+    printR = true;
+    break;
+  case 2:
+    printMono = true;
+    printL = false;
+    printR = false;
+    break;
+  case 3:
+    printMono = false;
+    printL = true;
+    printR = false;
+    break;
+  case 4:
+    printMono = false;
+    printL = false;
+    printR = true;
+    break;
+  default:
+    break;
+  }
   
   start = GetParam(dStart)->Value();
   size = GetParam(dSize)->Value();
+  size *= size;
+
+  if (size + start > 1.0)
+    size = 1.0 - start;
 
   if (!UIClosed)
     if (atStartCount < 100) atStartCount++;
     else if (displayCount % 1 == 0) GetUI()->SetAllControlsDirty();
 
-  double relpos, min_relpos(start), max_relpos(start + (1.0 - start) * size);
+  double relpos, min_relpos(start), max_relpos(start + size);
   int pos;
+  int ntodraw = (double)maxScopeBuffSize / (size * grid * samplesPerBeat) + 1,
+    ph_todraw = (double)maxScopeBuffSize / (grid * samplesPerBeat) + 1;
   
   if (nChans == 2) {
     for (int s = 0; s < nFrames; s++) {
       for (int i = 0; i < nChans; i++) {
         relpos = double((samplePos + s) % int(grid * samplesPerBeat)) / grid / samplesPerBeat;
+
         if (relpos >= min_relpos && relpos < max_relpos) {
           pos = int((relpos - min_relpos) / (max_relpos - min_relpos) * (double)maxScopeBuffSize);
-          buffer[i][pos] = outputs[i][s]*zoom;
+          for(int j=0; j<ntodraw && pos+j< maxScopeBuffSize;j++)
+            buffer[i][pos + j] = outputs[i][s] * zoom;
+        }
 
-          
-
-
+        if (relpos>=0.0 && relpos <1.0) {
+          phantom[i][int(relpos* maxScopeBuffSize)] = outputs[i][s] * zoom;
         }
         outputs[i][s] = inputs[i][s];
 
       }
-      if (chan != 0) {
-        if (chan == 1) {
-          buffer[0][pos] += buffer[1][pos];
-          buffer[0][pos] /= 2.0;
-        }
-        else if (chan == 2) {}
-        else if (chan == 3) {
-          buffer[0][pos] = buffer[1][pos];
-        }
-
-        buffer[1][pos] = 2.0 * zoom;
+      for (int j = 0; j < ntodraw && pos + j < maxScopeBuffSize; j++)
+         mono[pos + j] = (buffer[0][pos + j] + buffer[1][pos + j]) / 2.0;
+      
       }
-    }
+    
   } else { // Mono
 
   }

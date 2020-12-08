@@ -48,9 +48,9 @@ const double TempoDivisonToDouble[] =
   0.166666,      // 1 sixteenth note tripet
   0.25,       // 1 sixteenth note
   0.333333,      // 1 dotted sixteenth note
-  0.5,        // 1 eigth note
-  0.625,       // 1 dotted eigth note
-  0.666666,       // 1 eigth note tripet
+  0.666666,        // 1 eigth note      // Corrected mess arounds definition and plugin display
+  0.5,       // 1 dotted eigth note       // Corrected mess arounds definition and plugin display
+  0.625,       // 1 eigth note tripet        // Corrected mess arounds definition and plugin display
   1.0,        // 1 quater note a.k.a 1 beat @ 4/4
   1.5,       // 1 dotted beat @ 4/4
   2.0,        // 2 beats @ 4/4
@@ -89,7 +89,10 @@ public:
   double start, size, old_zoom;
 
   bool UIClosed, isInit;
-  sample buffer[2][maxScopeBuffSize];
+  bool printR, printL, printMono;
+  sample buffer[2][maxScopeBuffSize],
+    mono[maxScopeBuffSize],
+    phantom[2][maxScopeBuffSize];
   LFO<sample> lfo;
 
 };
