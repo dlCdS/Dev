@@ -12,24 +12,24 @@ const std::string test_file2 = file_path + "test2.txt";
 
   double getStatR(const double& x, IPlugEffect* plug) {
     if (plug->printR)
-      return plug->buffer[0][int(x * (double)maxScopeBuffSize)];
+      return plug->buffer[0][int(x * (double)maxScopeBuffSize)] * plug->zoom;
     else return 10.0;
   }
 
   double getStatL(const double& x, IPlugEffect* plug) {
     if (plug->printL)
-    return plug->buffer[1][int(x * (double) maxScopeBuffSize)];
+    return plug->buffer[1][int(x * (double) maxScopeBuffSize)] * plug->zoom;
     else return 10.0;
   }
 
   double getMono(const double& x, IPlugEffect* plug) {
     if (plug->printMono)
-    return plug->mono[int(x * (double)maxScopeBuffSize)];
+    return (plug->buffer[0][int(x * (double)maxScopeBuffSize)] + plug->buffer[1][int(x * (double)maxScopeBuffSize)]) / 2.0 * plug->zoom;
     else return 10.0;
   }
 
   double getFull(const double& x, IPlugEffect* plug) {
-    return plug->phantom[0][int(x * (double)maxScopeBuffSize)] + plug->phantom[1][int(x * (double)maxScopeBuffSize)];
+    return plug->phantom[0][int(x * (double)maxScopeBuffSize)] * plug->zoom + plug->phantom[1][int(x * (double)maxScopeBuffSize)] * plug->zoom;
   }
 
   double getWindow(const double& x, IPlugEffect* plug) {
@@ -42,7 +42,7 @@ const std::string test_file2 = file_path + "test2.txt";
 
 IPlugEffect::IPlugEffect(const InstanceInfo& info)
 : Plugin(info, MakeConfig(kNumParams, kNumPrograms)), UIClosed(true), displayCount(0), isInit(false),
-atStartCount(0), start(0.0), size(1.0), old_zoom(1.0)
+atStartCount(0), start(0.0), size(1.0), zoom(1.0), old_chan(-1)
 {
   for (int s = 0; s < maxScopeBuffSize; s++) {
     for (int i = 0; i < 2; i++) {
@@ -56,9 +56,9 @@ atStartCount(0), start(0.0), size(1.0), old_zoom(1.0)
   //GetParam(limiterType)->InitEnum("Limiter type", 0, 2, "", IParam::kFlagsNone, "", "Mr", "Tr");
   // GetParam(dGrid)->InitEnum("Rate", 8, { LFO_TEMPODIV_VALIST });
   GetParam(dGrid)->InitEnum("LFO Rate", LFO<>::k1, { LFO_TEMPODIV_VALIST });
-  GetParam(dStart)->InitDouble("Start", 0., 0., 1., 0.001);
-  GetParam(dSize)->InitDouble("Size", 1., 0., 1., 0.001);
-  GetParam(dZoom)->InitDouble("Zoom", 1., 0., 15., 0.001);
+  GetParam(dStart)->InitDouble("Start", 0., 0., .99, 0.001);
+  GetParam(dSize)->InitDouble("Size", 1., 0.01, 1., 0.001);
+  GetParam(dZoom)->InitDouble("Zoom", 1., 0.01, 15., 0.001);
   GetParam(dChannel)->InitEnum("Channel", 0, 5, "", IParam::kFlagsNone, "", "L+R", "L+R+Mono", "Mono", "L", "R");
 
 
@@ -227,62 +227,56 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 
   int samplesPerBeat = (int)GetSamplesPerBeat();
   int samplePos = (int)GetSamplePos();
+  static int samplePos_dbg = 0;
 
-  
-  //samplesPerBeat = 512;
+  /*
+  samplePos = samplePos_dbg;
+  samplePos_dbg += nFrames;
+  samplesPerBeat = 10000;
+  */
 
   double grid = TempoDivisonToDouble[(int)GetParam(dGrid)->Value()];
-  double zoom = GetParam(dZoom)->Value();
-  zoom *= zoom;
-
-  if (zoom != old_zoom)
-    if (nChans == 2)
-      for (int s = 0; s < maxScopeBuffSize; s++)
-        for (int i = 0; i < nChans; i++){
-          buffer[i][s] = buffer[i][s] / old_zoom * zoom;
-          phantom[i][s] = phantom[i][s] / old_zoom * zoom;
-          mono[s] = mono[s] / old_zoom * zoom;
-        }
-  old_zoom = zoom;
+  zoom = GetParam(dZoom)->Value() * GetParam(dZoom)->Value();
 
   int chan = GetParam(dChannel)->Value();
+  if(old_chan != chan)
+    switch (chan)
+    {
+    case 0:
+      printMono = false;
+      printL = true;
+      printR = true;
+      break;
+    case 1:
+      printMono = true;
+      printL = true;
+      printR = true;
+      break;
+    case 2:
+      printMono = true;
+      printL = false;
+      printR = false;
+      break;
+    case 3:
+      printMono = false;
+      printL = true;
+      printR = false;
+      break;
+    case 4:
+      printMono = false;
+      printL = false;
+      printR = true;
+      break;
+    default:
+      break;
+    }
+  old_chan = chan;
 
-  switch (chan)
-  {
-  case 0:
-    printMono = false;
-    printL = true;
-    printR = true;
-    break;
-  case 1:
-    printMono = true;
-    printL = true;
-    printR = true;
-    break;
-  case 2:
-    printMono = true;
-    printL = false;
-    printR = false;
-    break;
-  case 3:
-    printMono = false;
-    printL = true;
-    printR = false;
-    break;
-  case 4:
-    printMono = false;
-    printL = false;
-    printR = true;
-    break;
-  default:
-    break;
-  }
-  
   start = GetParam(dStart)->Value();
   size = GetParam(dSize)->Value();
   size *= size;
 
-  if (size + start > 1.0)
+  if (size + start >= 1.0)
     size = 1.0 - start;
 
   if (!UIClosed)
@@ -291,39 +285,37 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 
   double relpos, min_relpos(start), max_relpos(start + size);
   int pos;
-  int ntodraw = (double)maxScopeBuffSize / (size * grid * samplesPerBeat) + 1,
-    ph_todraw = (double)maxScopeBuffSize / (grid * samplesPerBeat) + 1;
+  int ntodraw = (double)maxScopeBuffSize / (size * grid * (double)samplesPerBeat) + 1,
+    ph_todraw = (double)maxScopeBuffSize / (grid * (double)samplesPerBeat) + 1;
+
+  if (ntodraw <= 0)
+    ntodraw = 1;
   
   if (nChans == 2) {
     for (int s = 0; s < nFrames; s++) {
+      relpos = double((samplePos + s) % int(grid * (double)samplesPerBeat)) / grid / (double)samplesPerBeat;
+      pos = int((relpos - min_relpos) / (max_relpos - min_relpos) * (double)maxScopeBuffSize);
       for (int i = 0; i < nChans; i++) {
-        relpos = double((samplePos + s) % int(grid * samplesPerBeat)) / grid / samplesPerBeat;
 
-        if (relpos >= min_relpos && relpos < max_relpos) {
-          pos = int((relpos - min_relpos) / (max_relpos - min_relpos) * (double)maxScopeBuffSize);
-          for(int j=0; j<ntodraw && pos+j< maxScopeBuffSize;j++)
-            buffer[i][pos + j] = outputs[i][s] * zoom;
+        if (relpos >= min_relpos && relpos < max_relpos && pos >= 0 && pos < maxScopeBuffSize) {
+          for (int j = 0; j < ntodraw && pos + j < maxScopeBuffSize; j++){
+            buffer[i][pos + j] = inputs[i][s];
+          }
         }
 
         if (relpos>=0.0 && relpos <1.0) {
-          phantom[i][int(relpos* maxScopeBuffSize)] = outputs[i][s] * zoom;
+          for (int j = 0; j < ph_todraw && int(relpos * maxScopeBuffSize) + j < maxScopeBuffSize && int(relpos * maxScopeBuffSize) >= 0; j++)
+            phantom[i][int(relpos* maxScopeBuffSize) + j] = inputs[i][s] ;
         }
+        
         outputs[i][s] = inputs[i][s];
-
+        
       }
-      for (int j = 0; j < ntodraw && pos + j < maxScopeBuffSize; j++)
-         mono[pos + j] = (buffer[0][pos + j] + buffer[1][pos + j]) / 2.0;
-      
-      }
+    }
     
   } else { // Mono
 
   }
-
-  
-
-  mOutSender.ProcessBlock(outputs, nFrames, kCtrlTagOutput);
-  //mLimSender.ProcessBlock(outputs, nFrames, kCtrlTagLim);
 
   isInit = true;
 }
@@ -341,8 +333,6 @@ void IPlugEffect::dcBlock(sample** inputs)
 
 void IPlugEffect::OnIdle()
 {
-  mOutSender.TransmitData(*this);
-  mLimSender.TransmitData(*this);
 }
 
 void IPlugEffect::OnUIClose()

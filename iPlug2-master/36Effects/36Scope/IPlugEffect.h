@@ -84,14 +84,14 @@ private:
 
 
   int displayCount, atStartCount;
+  int old_chan;
 
 public:
-  double start, size, old_zoom;
+  double start, size, zoom;
 
   bool UIClosed, isInit;
   bool printR, printL, printMono;
   sample buffer[2][maxScopeBuffSize],
-    mono[maxScopeBuffSize],
     phantom[2][maxScopeBuffSize];
   LFO<sample> lfo;
 
