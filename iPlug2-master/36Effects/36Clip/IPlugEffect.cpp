@@ -30,12 +30,12 @@ double displayVHigh(const double& x, IPlugEffect* plug) {
 }
 
 IPlugEffect::IPlugEffect(const InstanceInfo& info) 
-: Plugin(info, MakeConfig(kNumParams, kNumPrograms)), der_disp(0.0), UIClosed(true), displayCount(0), isInit(false),
-atStartCount(0), sampleRate(0), is_active(false)
+: Plugin(info, MakeConfig(kNumParams, kNumPrograms)), UIClosed(true), displayCount(0), isInit(false),
+atStartCount(0), sampleRate(0), is_active(false), dispcount(0)
 {
   GetParam(kCap)->InitDouble("Cap", 1., 0., 1., 0.001, "");
-  GetParam(kDamp)->InitDouble("Damp", 1., 1., 3., 0.001, "");
-  GetParam(kSmooth)->InitDouble("Smooth", 0., 0., 1., 0.001, "");
+  GetParam(kDamp)->InitDouble("Smooth", 0., 0., 1., 0.001, "");
+  GetParam(kSmooth)->InitDouble("Dry/Wet", 0., 0., 1., 0.001, "");
   GetParam(kTresh)->InitDouble("Tresh", 1., 0., .5, 0.001, "");
   GetParam(kWorkGain)->InitDouble("WorkGain", 1., 0.1, 20., 0.001, "");
   GetParam(kDisplay)->InitBool("Display", true);
@@ -51,9 +51,14 @@ atStartCount(0), sampleRate(0), is_active(false)
   for (int i = 0; i < 2; i++) {
     prev_sig[i][0] = 0.0;
     prev_sig[i][1] = 0.0;
-    prev_orig[i] = 0.0;
+    prev_orig[i][0] = 0.0;
+    prev_orig[i][1] = 0.0;
   }
 
+  for (int i = 0; i < derDispSize; i++) {
+    derDispInit[i] = 0.0;
+    derDisp[i] = 0.0;
+  }
   sder_cap = 1.0;
 
   for (int s = 0; s < displaySize; s++) {
@@ -191,6 +196,23 @@ atStartCount(0), sampleRate(0), is_active(false)
      IText(16.f, EAlign::Center) // Label text
     };
 
+    const IVStyle style_white{
+     true, // Show label
+     true, // Show value
+     {
+       IColor(0, 255, 200, 100), // Background
+       IColor(200, 200, 200, 230), // Foreground
+       DEFAULT_PRCOLOR, // Pressed
+       COLOR_BLACK, // Frame
+       DEFAULT_HLCOLOR, // Highlight
+       DEFAULT_SHCOLOR, // Shadow
+       COLOR_WHITE, // Extra 1
+       DEFAULT_X2COLOR, // Extra 2
+       DEFAULT_X3COLOR  // Extra 3
+     }, // Colors
+     IText(16.f, EAlign::Center) // Label text
+    };
+
     const IText forkAwesomeText{ 20.f, "ForkAwesome" };
 
     const int nRows = 6;
@@ -216,8 +238,8 @@ atStartCount(0), sampleRate(0), is_active(false)
 
     
     pGraphics->AttachControl(new IVKnobControl(cell(0, 0).GetMidVPadded(buttonSize), kCap, "Cap", style, false), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVKnobControl(cell(0, 1).GetMidVPadded(buttonSize), kDamp, "Damp", style, false), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVKnobControl(cell(0, 2).GetMidVPadded(buttonSize), kSmooth, "Smooth", style, false), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVKnobControl(cell(0, 1).GetMidVPadded(buttonSize), kDamp, "Smooth", style, false), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVKnobControl(cell(0, 2).GetMidVPadded(buttonSize), kSmooth, "Dry/Wet", style, false), kNoTag, "vcontrols");
     pGraphics->AttachControl(new IVKnobControl(cell(0, 3).GetMidVPadded(buttonSize), kTresh, "Tresh", style, false), kNoTag, "vcontrols");
     pGraphics->AttachControl(new IVKnobControl(cell(0, 4).GetMidVPadded(buttonSize), kWorkGain, "Work Gain", style, false), kNoTag, "vcontrols");
 
@@ -238,6 +260,7 @@ atStartCount(0), sampleRate(0), is_active(false)
     pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 4)), "", style_violet, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams+2, "LFO");
     pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 4)), "", style_red, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams+3, "LFO");
     pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 4)), "", style_gray, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams+4, "LFO");
+    pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 4)), "", style_gray, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams + 4, "LFO");
 
     const double dist = 30.;
     pGraphics->AttachControl(new ITextToggleControl(cell(1, 0).GetGridCell(0, 0, 2, 2).GetFromTop(dist).GetFromLeft(dist), kDisplay, ICON_FK_SQUARE_O, ICON_FK_CHECK_SQUARE, forkAwesomeText), kNoTag, "vcontrols");
@@ -292,10 +315,11 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames) {
   }
 
   changed = changed || checkChanged(sder_cap, GetParam(kCap)->Value());
-  changed = changed || checkChanged(damp, GetParam(kDamp)->Value());
+  changed = changed || checkChanged(smooth2, GetParam(kDamp)->Value());
   changed = changed || checkChanged(smooth, GetParam(kSmooth)->Value());
 
   smooth = GetParam(kSmooth)->Value()* GetParam(kSmooth)->Value();
+  smooth2 = GetParam(kDamp)->Value() * GetParam(kDamp)->Value();
 
   tresh = GetParam(kTresh)->Value();
   double wgain = GetParam(kWorkGain)->Value();
@@ -304,7 +328,7 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames) {
   bool use_log10 = GetParam(kLog)->Value(),
     print_disp = GetParam(kDisplay)->Value();
 
-  
+  double tmpDerDisp, tmpDerDispInit;
 
   if (!UIClosed){
     if (atStartCount < 100) {
@@ -318,28 +342,44 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames) {
   }
  
     for (int s = 0; s < nFrames; s++) {
-      der_disp = 0.0;
+      tmpDerDisp = 0.0;
+      tmpDerDispInit = 0.0;
       for (int chan = 0; chan < nChans; chan++) {
-        outputs[chan][s] = correction(inputs[chan][s] * wgain, prev_sig[chan][0], prev_sig[chan][1], prev_orig[chan], global_ts, &der_disp);
+        outputs[chan][s] = correction(inputs[chan][s] * wgain, prev_sig[chan][0], prev_sig[chan][1], prev_orig[chan][0], prev_orig[chan][1], global_ts, &tmpDerDisp, &tmpDerDispInit);
         prev_sig[chan][1] = prev_sig[chan][0];
         prev_sig[chan][0] = outputs[chan][s];
-        prev_orig[chan] = inputs[chan][s] * wgain;
+        prev_orig[chan][1] = prev_orig[chan][0];
+        prev_orig[chan][0] = inputs[chan][s] * wgain;
         outputs[chan][s] /= wgain;
       }
 
-      if(use_log10 && print_disp){
-        mRLSender.PushData({ kNumParams, {float(log10(tresh * sder_cap + 1.0))} });
-        mRLSender.PushData({ kNumParams + 1, {float(log10(tresh + 1.0))} });
-        mRLSender.PushData({ kNumParams + 2, {float(log10(tresh * highCap + 1.0))} });
-        mRLSender.PushData({ kNumParams + 3, {float(log10(tresh * vhighCap + 1.0))} });
-        mRLSender.PushData({ kNumParams + 4, {float(log10(der_disp + 1.0))} });
-      }
-      else if(print_disp) {
-        mRLSender.PushData({ kNumParams, {float((tresh * sder_cap ))} });
-        mRLSender.PushData({ kNumParams + 1, {float((tresh ))} });
-        mRLSender.PushData({ kNumParams + 2, {float((tresh * highCap ))} });
-        mRLSender.PushData({ kNumParams + 3, {float((tresh * vhighCap ))} });
-        mRLSender.PushData({ kNumParams + 4, {float((der_disp ))} });
+      if(print_disp) {
+        derDisp[dispcount] = tmpDerDisp;
+        derDispInit[dispcount] = tmpDerDispInit;
+        dispcount = (dispcount + 1) % derDispSize;
+        tmpDerDisp = 0.0;
+        tmpDerDispInit = 0.0;
+        for (int i = 0; i < derDispSize; i++) {
+          tmpDerDisp = std::max(tmpDerDisp, derDisp[i]);
+          tmpDerDispInit = std::max(tmpDerDispInit, derDispInit[i]);
+        }
+
+        if (use_log10) {
+          mRLSender.PushData({ kNumParams, {float(log10(tresh * sder_cap + 1.0))} });
+          mRLSender.PushData({ kNumParams + 1, {float(log10(tresh + 1.0))} });
+          mRLSender.PushData({ kNumParams + 2, {float(log10(tresh * highCap + 1.0))} });
+          mRLSender.PushData({ kNumParams + 3, {float(log10(tresh * vhighCap + 1.0))} });
+          mRLSender.PushData({ kNumParams + 4, {float(log10(tmpDerDispInit + 1.0))} });
+          mRLSender.PushData({ kNumParams + 4, {float(log10(tmpDerDisp + 1.0))} });
+        }
+        else {
+          mRLSender.PushData({ kNumParams, {float((tresh * sder_cap))} });
+          mRLSender.PushData({ kNumParams + 1, {float((tresh))} });
+          mRLSender.PushData({ kNumParams + 2, {float((tresh * highCap))} });
+          mRLSender.PushData({ kNumParams + 3, {float((tresh * vhighCap))} });
+          mRLSender.PushData({ kNumParams + 4, {float((tmpDerDispInit))} });
+          mRLSender.PushData({ kNumParams + 4, {float((tmpDerDisp))} });
+        }
       }
   }
 
@@ -349,9 +389,13 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames) {
   ++displayCount %= displayLoop;
 }
 
-double IPlugEffect::correction(const double& sig, const double& sig1, const double& sig2, const double& base_sig1, const double& ts, double* display_der)
+double IPlugEffect::correction(const double& sig, const double& sig1, const double& sig2,
+  const double& base_sig1, const double& base_sig2,
+  const double& ts, double* display_der, double* display_der_init)
 {
   double der2 = (sig + sig2 - 2.0 * sig1) / ts / ts,
+    der2_init = (sig + sig2 - 2.0 * base_sig1) / ts / ts,
+    der2_base = (sig + base_sig2 - 2.0 * base_sig1) / ts / ts,
     der_init = (sig - base_sig1) / ts,
     der, loc_sder_cap(sder_cap / ts / ts);
   double sig_res = sig;
@@ -363,30 +407,34 @@ double IPlugEffect::correction(const double& sig, const double& sig1, const doub
     loc_sder_cap *= tresh;
   }
 
+  if (display_der_init != NULL) {
+    if (abs(der2_base * ts * ts) > * display_der_init)
+      *display_der_init = abs(der2_base * ts * ts);
+  }
+
   if (abs(der2) > loc_sder_cap) {
     if (der2 < 0) der2 = -1.0 * loc_sder_cap;
     else der2 = loc_sder_cap;
-    sig_res = (der2 * ts * ts + 2.0 * sig1 - sig2) / damp;
+    der2 = smooth2 * der2_base + (1.0 - smooth2) * der2;
+    sig_res = (der2 * ts * ts + 2.0 * sig1 - sig2);
   }
-
 
   der = (sig_res - sig1) / ts;
   if(der != der_init) {
     der = smooth * der_init + (1.0 - smooth) * der;
     sig_res = der * ts + sig1;
   }
-   
-
+  
   return sig_res;
 }
 
 void IPlugEffect::computeDisplay()
 {
   for (int i = 2; i < displaySize; i++) {
-    dampRes[i] = correction(dampTest[i], dampRes[i - 1], dampRes[i - 2], dampTest[i-1]);
-    dampCap[i] = correction(dampTest[i]*sder_cap, dampCap[i - 1], dampCap[i - 2], dampTest[i - 1] * sder_cap);
-    dampHigh[i] = correction(dampTest[i]* highCap, dampHigh[i - 1], dampHigh[i - 2], dampTest[i - 1] * highCap);
-    dampVHigh[i] = correction(dampTest[i] * vhighCap, dampVHigh[i - 1], dampVHigh[i - 2], dampTest[i - 1] * vhighCap);
+    dampRes[i] = correction(dampTest[i], dampRes[i - 1], dampRes[i - 2], dampTest[i-1], dampTest[i - 2]);
+    dampCap[i] = correction(dampTest[i] * sder_cap, dampCap[i - 1], dampCap[i - 2], dampTest[i - 1] * sder_cap, dampTest[i - 2] * sder_cap);
+    dampHigh[i] = correction(dampTest[i]* highCap, dampHigh[i - 1], dampHigh[i - 2], dampTest[i - 1] * highCap, dampTest[i - 2] * highCap);
+    dampVHigh[i] = correction(dampTest[i] * vhighCap, dampVHigh[i - 1], dampVHigh[i - 2], dampTest[i - 1] * vhighCap, dampTest[i - 2] * vhighCap);
   }
 }
 

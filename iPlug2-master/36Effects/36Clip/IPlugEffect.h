@@ -13,6 +13,7 @@ const int maxBuffSize = 16384;
 const int displaySize = 40;
 const int displayLoop = 50;
 const int sizePlot = 1024;
+const int derDispSize = 10;
 
 enum EParams
 {
@@ -58,15 +59,21 @@ public:
     dampCap[displaySize],
     dampHigh[displaySize],
     dampVHigh[displaySize],
-    prev_sig[2][2], prev_orig[2],
+    prev_sig[2][2], prev_orig[2][2],
     global_ts, sampleRate,
     auto_scale;
 
   bool is_active;
 
   double sder_cap,
-    damp, smooth, tresh, der_disp;
+    smooth, tresh, smooth2;
+  double derDisp[derDispSize], derDispInit[derDispSize];
 
-  double correction(const double& sig, const double& sig1, const double& sig2, const double& base_sig1, const double& ts = 1.0, double *display_der=NULL);
+  int dispcount;
+
+  double correction(const double& sig, const double& sig1, const double& sig2,
+    const double& base_sig1, const double& base_sig2,
+    const double& ts = 1.0, double *display_der=NULL, double* display_der_init = NULL);
+
   void computeDisplay();
 };
