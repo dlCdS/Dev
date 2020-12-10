@@ -10,6 +10,10 @@ double displayShapeNeg(const double& x, IPlugEffect* plug) {
   return plug->getFromX(x + 1.0);
 }
 
+double displayShapePolar(const double& x, IPlugEffect* plug) {
+  return plug->getFromTheta(x);
+}
+
 IPlugEffect::IPlugEffect(const InstanceInfo& info)
 : Plugin(info, MakeConfig(kNumParams, kNumPrograms)), power(1.0), UIClosed(true), displayCount(0), isInit(false),
 atStartCount(0)
@@ -52,8 +56,8 @@ atStartCount(0)
 
     const IText forkAwesomeText{ 20.f, "ForkAwesome" };
 
-    const int nRows = 5;
-    const int nCols = 4;
+    const int nRows = 8;
+    const int nCols = 8;
 
     int cellIdx = -1;
 
@@ -73,17 +77,22 @@ atStartCount(0)
       return b.GetGridCell(r * nCols + c, nRows, nCols).GetPadded(-5.);
     };
 
-    pGraphics->AttachControl(new IVKnobControl(nextCell().GetMidVPadded(buttonSize), kPower, "Pan", style, false), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVSlideSwitchControl(nextCell().GetMidVPadded(buttonSize), kType, "M/S type", style, true), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVKnobControl(cell(0, 0).GetMidVPadded(buttonSize), kPower, "Pan", style, false), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(0, 1).GetMidVPadded(buttonSize), kType, "M/S type", style, true), kNoTag, "vcontrols");
 
 
-    pGraphics->AttachControl(new IVPlotControl(cell(1, 0).Union(cell(4, 3)), {
+    pGraphics->AttachControl(new IVPlotControl(cell(1, 0).Union(cell(3, 2)), {
      {COLOR_DARK_GRAY , [&](double x) { return displayShape(x, this); } },
      {COLOR_DARK_GRAY , [&](double x) { return displayShapeNeg(x, this); } },
-     
-
       }, sizePlot, "", style, -0.85, .85), kNoTag, "vcontrols");
 
+    pGraphics->AttachControl(new IVPlotControl(cell(1, 3).Union(cell(3, 7)), {
+     {COLOR_DARK_GRAY , [&](double x) { return displayShape(x*2.0, this); } },
+      }, sizePlot, "", style, -0.85, .85), kNoTag, "vcontrols");
+      
+    pGraphics->AttachControl(new IVPlotControl(cell(4, 3).Union(cell(6, 7)), {
+     {COLOR_DARK_GRAY , [&](double x) { return displayShapePolar(x * 2.0, this); } },
+      }, sizePlot, "", style, -0.85, .85), kNoTag, "vcontrols");
   };
 #endif
 }
@@ -140,5 +149,10 @@ double IPlugEffect::getFromX(const double& val)
   else if(val<0.0) return -1.0 * getFromX(val + 1.0);
   double x = val * 2.0 - 1.0;
   return pow(1.0 - pow(abs(x), power), 1.0 / power);
+}
+double IPlugEffect::getFromTheta(const double& val)
+{
+  double x = val * PI;
+  return pow(1.0 / (pow(abs(cos(x)), power) + pow(abs(sin(x)), power)), 1.0 / power) * sin(x);
 }
 #endif

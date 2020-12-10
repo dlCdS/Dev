@@ -35,6 +35,8 @@ public:
   void OnUIOpen() override;
 
   double getFromX(const double& x);
+  double getFromTheta(const double& x);
+
 #endif
 private:
   double power;
