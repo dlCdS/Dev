@@ -62,7 +62,7 @@ atStartCount(0), sampleRate(0), is_active(false), dispcount(0)
   sder_cap = 1.0;
 
   for (int s = 0; s < displaySize; s++) {
-    if (s < displaySize / 2.0)
+    if (s < displaySize / 3.0)
       dampTest[s] = 1.0;
     else
       dampTest[s] = 0.0;
@@ -238,8 +238,8 @@ atStartCount(0), sampleRate(0), is_active(false), dispcount(0)
 
     
     pGraphics->AttachControl(new IVKnobControl(cell(0, 0).GetMidVPadded(buttonSize), kCap, "Cap", style, false), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVKnobControl(cell(0, 1).GetMidVPadded(buttonSize), kDamp, "Smooth", style, false), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVKnobControl(cell(0, 2).GetMidVPadded(buttonSize), kSmooth, "Dry/Wet", style, false), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVKnobControl(cell(0, 1).GetMidVPadded(buttonSize), kDamp, "Der2", style, false), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVKnobControl(cell(0, 2).GetMidVPadded(buttonSize), kSmooth, "Der1", style, false), kNoTag, "vcontrols");
     pGraphics->AttachControl(new IVKnobControl(cell(0, 3).GetMidVPadded(buttonSize), kTresh, "Tresh", style, false), kNoTag, "vcontrols");
     pGraphics->AttachControl(new IVKnobControl(cell(0, 4).GetMidVPadded(buttonSize), kWorkGain, "Work Gain", style, false), kNoTag, "vcontrols");
 
@@ -252,15 +252,15 @@ atStartCount(0), sampleRate(0), is_active(false), dispcount(0)
       {COLOR_VIOLET , [&](double x) { return displayHigh(x, this); } },
       {COLOR_RED , [&](double x) { return displayVHigh(x, this); } }
       
-      }, displaySize-1, "", style, -0.2, 1.2), kNoTag, "vcontrols");
+      }, displaySize-1, "", style, -1., 2.), kNoTag, "vcontrols");
 
     
     pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 4)), "", style_green, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams, "LFO");
     pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 4)), "", style_blue, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams+1, "LFO");
     pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 4)), "", style_violet, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams+2, "LFO");
     pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 4)), "", style_red, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams+3, "LFO");
-    pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 4)), "", style_gray, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams+4, "LFO");
-    pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 4)), "", style_gray, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams + 4, "LFO");
+    pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 4)), "", style_gray, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams+5, "LFO");
+    pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 4)), "", style_white, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams +4, "LFO");
 
     const double dist = 30.;
     pGraphics->AttachControl(new ITextToggleControl(cell(1, 0).GetGridCell(0, 0, 2, 2).GetFromTop(dist).GetFromLeft(dist), kDisplay, ICON_FK_SQUARE_O, ICON_FK_CHECK_SQUARE, forkAwesomeText), kNoTag, "vcontrols");
@@ -370,7 +370,7 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames) {
           mRLSender.PushData({ kNumParams + 2, {float(log10(tresh * highCap + 1.0))} });
           mRLSender.PushData({ kNumParams + 3, {float(log10(tresh * vhighCap + 1.0))} });
           mRLSender.PushData({ kNumParams + 4, {float(log10(tmpDerDispInit + 1.0))} });
-          mRLSender.PushData({ kNumParams + 4, {float(log10(tmpDerDisp + 1.0))} });
+          mRLSender.PushData({ kNumParams + 5, {float(log10(tmpDerDisp + 1.0))} });
         }
         else {
           mRLSender.PushData({ kNumParams, {float((tresh * sder_cap))} });
@@ -378,7 +378,7 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames) {
           mRLSender.PushData({ kNumParams + 2, {float((tresh * highCap))} });
           mRLSender.PushData({ kNumParams + 3, {float((tresh * vhighCap))} });
           mRLSender.PushData({ kNumParams + 4, {float((tmpDerDispInit))} });
-          mRLSender.PushData({ kNumParams + 4, {float((tmpDerDisp))} });
+          mRLSender.PushData({ kNumParams + 5, {float((tmpDerDisp))} });
         }
       }
   }
@@ -394,7 +394,6 @@ double IPlugEffect::correction(const double& sig, const double& sig1, const doub
   const double& ts, double* display_der, double* display_der_init)
 {
   double der2 = (sig + sig2 - 2.0 * sig1) / ts / ts,
-    der2_init = (sig + sig2 - 2.0 * base_sig1) / ts / ts,
     der2_base = (sig + base_sig2 - 2.0 * base_sig1) / ts / ts,
     der_init = (sig - base_sig1) / ts,
     der, loc_sder_cap(sder_cap / ts / ts);
@@ -430,11 +429,12 @@ double IPlugEffect::correction(const double& sig, const double& sig1, const doub
 
 void IPlugEffect::computeDisplay()
 {
+  const double ts = 10000;
   for (int i = 2; i < displaySize; i++) {
-    dampRes[i] = correction(dampTest[i], dampRes[i - 1], dampRes[i - 2], dampTest[i-1], dampTest[i - 2]);
-    dampCap[i] = correction(dampTest[i] * sder_cap, dampCap[i - 1], dampCap[i - 2], dampTest[i - 1] * sder_cap, dampTest[i - 2] * sder_cap);
-    dampHigh[i] = correction(dampTest[i]* highCap, dampHigh[i - 1], dampHigh[i - 2], dampTest[i - 1] * highCap, dampTest[i - 2] * highCap);
-    dampVHigh[i] = correction(dampTest[i] * vhighCap, dampVHigh[i - 1], dampVHigh[i - 2], dampTest[i - 1] * vhighCap, dampTest[i - 2] * vhighCap);
+    dampRes[i] = correction(dampTest[i], dampRes[i - 1], dampRes[i - 2], dampTest[i-1], dampTest[i - 2], ts);
+    dampCap[i] = correction(dampTest[i] * sder_cap, dampCap[i - 1], dampCap[i - 2], dampTest[i - 1] * sder_cap, dampTest[i - 2] * sder_cap, ts);
+    dampHigh[i] = correction(dampTest[i]* highCap, dampHigh[i - 1], dampHigh[i - 2], dampTest[i - 1] * highCap, dampTest[i - 2] * highCap, ts);
+    dampVHigh[i] = correction(dampTest[i] * vhighCap, dampVHigh[i - 1], dampVHigh[i - 2], dampTest[i - 1] * vhighCap, dampTest[i - 2] * vhighCap, ts);
   }
 }
 

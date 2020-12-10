@@ -10,7 +10,7 @@
 const int kNumPrograms = 1;
 const double soundSpeed = 3430.0; // cm per sec
 const int maxBuffSize = 16384;
-const int displaySize = 40;
+const int displaySize = 60;
 const int displayLoop = 50;
 const int sizePlot = 1024;
 const int derDispSize = 10;

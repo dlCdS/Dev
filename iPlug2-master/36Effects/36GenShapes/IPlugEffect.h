@@ -3,6 +3,7 @@
 #include "IPlug_include_in_plug_hdr.h"
 #include "IControls.h"
 #include "Wav.h"
+#include "Math36.h"
 
 const int kNumPrograms = 1;
 const double soundSpeed = 3430.0; // cm per sec
@@ -36,10 +37,16 @@ public:
 
   double getFromX(const double& x);
   double getFromTheta(const double& x);
+  double getSigmoid(const double& x);
+
+  void createTopoCartesianShape();
+  void createTopoPolarShape();
+  void createSigmoidShape();
 
 #endif
 private:
   double power;
+  Math36::Sigmoid sigmoid;
 
   bool UIClosed, isInit;
   int displayCount, atStartCount;

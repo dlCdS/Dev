@@ -137,5 +137,26 @@ namespace Math36 {
     double _n, _real_freq, _freq, _cos, _sin, _phase, _arg;
     bool _phase_reset;
   };
-  
+
+  class Sigmoid {
+  public:
+    enum SType {
+      SIG = 0,
+      LIN,
+      REV
+    };
+
+    Sigmoid();
+    ~Sigmoid();
+
+    double get(const double& x) const;
+    double rev(const double& x) const;
+    double sig(const double& x) const;
+    double linear(const double& x) const;
+    void setSteepness(const double& steepness);
+
+  private:
+    double steep, c, v;
+    SType type;
+  };
 }

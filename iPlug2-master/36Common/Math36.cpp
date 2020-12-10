@@ -332,3 +332,67 @@ void Math36::AudioDb::next(const double& next_value)
   value = abs(yn_1) + value * ratio;
   db = 20 * log10(value/2.0);
 }
+
+Math36::Sigmoid::Sigmoid() : steep(0.0), c(1.0), v(1.0), type(SIG)
+{
+  setSteepness(1.0);
+}
+
+Math36::Sigmoid::~Sigmoid()
+{
+}
+
+double Math36::Sigmoid::get(const double& x) const
+{
+  switch (type)
+  {
+  case Sigmoid::SIG:
+    return sig(x);
+    break;
+  case Sigmoid::LIN:
+    return linear(x);
+    break;
+  case Sigmoid::REV:
+    return rev(x);
+    break;
+  default:
+    return linear(x);
+    break;
+  }
+}
+
+double Math36::Sigmoid::rev(const double& x) const
+{
+  return -log(c / (v + x) - 1.0) / steep + 0.5;
+}
+
+double Math36::Sigmoid::sig(const double& x) const
+{
+  return c / (1.0 + exp(-steep * (x - 0.5))) - v;
+}
+
+double Math36::Sigmoid::linear(const double& x) const
+{
+  return x;
+}
+
+void Math36::Sigmoid::setSteepness(const double& steepness)
+{
+  if (steep == steepness)
+    return;
+  if (steepness < 0.0) {
+    type = SType::REV;
+    steep = -steepness;
+    v = (1.0 + exp(-steep / 2.0)) / (exp(steep / 2) - exp(-steep / 2.0));
+    c = v * (1.0 + exp(steep / 2.0));
+  }
+  else if (steepness > 0.0) {
+    type = SType::SIG;
+    steep = steepness;
+    v = (1.0 + exp(-steep / 2.0)) / (exp(steep / 2) - exp(-steep / 2.0));
+    c = v * (1.0 + exp(steep / 2.0));
+  }
+  else {
+    type = SType::LIN;
+  }
+}

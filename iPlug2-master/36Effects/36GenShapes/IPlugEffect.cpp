@@ -18,7 +18,7 @@ IPlugEffect::IPlugEffect(const InstanceInfo& info)
 : Plugin(info, MakeConfig(kNumParams, kNumPrograms)), power(1.0), UIClosed(true), displayCount(0), isInit(false),
 atStartCount(0)
 {
-  GetParam(kPower)->InitDouble("Pan", 2., .1, 10.0, 0.01);
+  GetParam(kPower)->InitDouble("Pan", 2., -1.0, 10.0, 0.01);
   GetParam(kType)->InitEnum("Type", 0, 3, "", IParam::kFlagsNone, "", "None", "Side", "M/S");
 
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
@@ -94,6 +94,10 @@ atStartCount(0)
      {COLOR_DARK_GRAY , [&](double x) { return displayShapePolar(x * 2.0, this); } },
       }, sizePlot, "", style, -0.85, .85), kNoTag, "vcontrols");
   };
+
+  createTopoCartesianShape();
+  createTopoPolarShape();
+  createSigmoidShape();
 #endif
 }
 
@@ -116,7 +120,6 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
     }
   }
 
-  
   int MS_type = GetParam(kType)->Value();
 
 
@@ -148,11 +151,126 @@ double IPlugEffect::getFromX(const double& val)
   if (val >= 1.0) return -1.0 * getFromX(val - 1.0);
   else if(val<0.0) return -1.0 * getFromX(val + 1.0);
   double x = val * 2.0 - 1.0;
-  return pow(1.0 - pow(abs(x), power), 1.0 / power);
+  if (power > 0.0)
+    return pow(1.0 - pow(abs(x), power), 1.0 / power);
+  else return 1.0;
 }
 double IPlugEffect::getFromTheta(const double& val)
 {
   double x = val * PI;
-  return pow(1.0 / (pow(abs(cos(x)), power) + pow(abs(sin(x)), power)), 1.0 / power) * sin(x);
+  if(power > 0.0)
+    return pow(1.0 / (pow(abs(cos(x)), power) + pow(abs(sin(x)), power)), 1.0 / power) * sin(x);
+  else {
+    if (val >= 1.0) return -1.0 * getFromTheta(val - 1.0);
+    else return 1.0 / max(abs(cos(x)), abs(sin(x))) * sin(x);
+  }
+}
+
+double IPlugEffect::getSigmoid(const double& val)
+{
+  double x = val;
+  while (x > 2.0) x -= 2.0;
+  if (x > 1.0) return getSigmoid(2.0 - x);
+  return 2.0 * sigmoid.get(x) - 1.0;
+}
+
+void IPlugEffect::createTopoCartesianShape()
+{
+  const int  nTests = 13;
+
+  WavFile::WavFileData* data = WavFile::initFile("TopoCartesianShape.wav");
+  power = 0.5;
+  for (int s = 0; s < shapeBuffSize; s++) 
+    WavFile::printSignal(data, getFromX(2.0 * double(s) / shapeBuffSize));
+
+  power = 0.65;
+ for (int s = 0; s < shapeBuffSize; s++)
+    WavFile::printSignal(data, getFromX(2.0 * double(s) / shapeBuffSize));
+
+ power = 0.85;
+ for (int s = 0; s < shapeBuffSize; s++)
+   WavFile::printSignal(data, getFromX(2.0 * double(s) / shapeBuffSize));
+
+ power = 1.;
+  for (int i = 0; i < nTests; i++) {
+    for (int s = 0; s < shapeBuffSize; s++) {
+      WavFile::printSignal(data, getFromX(2.0 * double(s) / shapeBuffSize));
+    }
+    power *= pow(2.0, 0.25);
+  }
+
+  power = -1.;
+  for (int s = 0; s < shapeBuffSize; s++)
+    WavFile::printSignal(data, getFromX(2.0 * double(s) / shapeBuffSize));
+  WavFile::closeFile(data);
+}
+
+void IPlugEffect::createTopoPolarShape()
+{
+  const int  nTests = 13;
+
+  WavFile::WavFileData* data = WavFile::initFile("TopoPolarShape.wav");
+  power = 0.5;
+  for (int s = 0; s < shapeBuffSize; s++)
+    WavFile::printSignal(data, getFromTheta(2.0 * double(s) / shapeBuffSize));
+
+  power = 0.65;
+  for (int s = 0; s < shapeBuffSize; s++)
+    WavFile::printSignal(data, getFromTheta(2.0 * double(s) / shapeBuffSize));
+
+  power = 0.85;
+  for (int s = 0; s < shapeBuffSize; s++)
+    WavFile::printSignal(data, getFromTheta(2.0 * double(s) / shapeBuffSize));
+
+  power = 1.;
+  for (int i = 0; i < nTests; i++) {
+    for (int s = 0; s < shapeBuffSize; s++) {
+      WavFile::printSignal(data, getFromTheta(2.0 * double(s) / shapeBuffSize));
+    }
+    power *= pow(2.0, 0.25);
+  }
+
+  power = -1.;
+  for (int s = 0; s < shapeBuffSize; s++)
+    WavFile::printSignal(data, getFromTheta(2.0 * double(s) / shapeBuffSize));
+  WavFile::closeFile(data);
+}
+
+void IPlugEffect::createSigmoidShape()
+{
+  const int  nTests = 13;
+  double stiff = -32;
+  WavFile::WavFileData* data = WavFile::initFile("SigmoidShape.wav");
+
+  while (stiff < -0.24) {
+    sigmoid.setSteepness(stiff);
+    for (int s = 0; s < shapeBuffSize; s++)
+      WavFile::printSignal(data, getSigmoid(2.0 * double(s) / shapeBuffSize +.5));
+    stiff /= 2.0;
+  }
+
+  sigmoid.setSteepness(0.0);
+  for (int s = 0; s < shapeBuffSize; s++)
+    WavFile::printSignal(data, getSigmoid(2.0 * double(s) / shapeBuffSize + .5));
+
+
+  sigmoid.setSteepness(0.25);
+  for (int s = 0; s < shapeBuffSize; s++)
+    WavFile::printSignal(data, getSigmoid(2.0 * double(s) / shapeBuffSize + .5));
+
+
+  sigmoid.setSteepness(0.5);
+  for (int s = 0; s < shapeBuffSize; s++)
+    WavFile::printSignal(data, getSigmoid(2.0 * double(s) / shapeBuffSize + .5));
+
+  stiff = 1.;
+  while (stiff < 200) {
+    sigmoid.setSteepness(stiff);
+    for (int s = 0; s < shapeBuffSize; s++)
+      WavFile::printSignal(data, getSigmoid(2.0 * double(s) / shapeBuffSize + .5));
+    stiff *= 1.5;
+  }
+
+  WavFile::closeFile(data);
 }
 #endif
