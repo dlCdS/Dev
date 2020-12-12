@@ -153,7 +153,7 @@ namespace Math36 {
     double rev(const double& x) const;
     double sig(const double& x) const;
     double linear(const double& x) const;
-    void setSteepness(const double& steepness);
+    bool setSteepness(const double& steepness);
 
   private:
     double steep, c, v;

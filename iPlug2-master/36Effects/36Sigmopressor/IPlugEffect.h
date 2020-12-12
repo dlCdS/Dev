@@ -10,13 +10,18 @@
 const int kNumPrograms = 1;
 const double soundSpeed = 3430.0; // cm per sec
 const int maxBuffSize = 16384;
+const int displayLoop = 50;
+const int sizePlot = 1024;
+const int derDispSize = 10;
 
 enum EParams
 {
-  kP = 0,
-  kI,
-  kD,
-  kMode,
+  kTresh = 0,
+  kStiff,
+  kGain,
+  kInGain,
+  kDisplay,
+  kLog,
   kNumParams
 };
 
@@ -30,15 +35,24 @@ public:
 
 #if IPLUG_DSP // http://bit.ly/2S64BDd
   void ProcessBlock(sample** inputs, sample** outputs, int nFrames) override;
- 
+
+  void OnIdle() override;
+  void OnUIClose() override;
+  void OnUIOpen() override;
+
 #endif
 private:
+  bool UIClosed, isInit;
+  int displayCount, atStartCount;
 
 
-  void testPlug();
-  Math36::PID _pid[2];
+  ISender<1> mRLSender;
 
-  double last_out[2];
-  Math36::AudioDb _audiodb[2];
+  double input_env[derDispSize], output_env[derDispSize];
+
+  int dispcount;
+
+public:
+  Math36::Sigmoid sigmoid;
   
 };

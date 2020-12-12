@@ -2,19 +2,30 @@
 #include "IPlug_include_in_plug_src.h"
 #include <iostream>
 #include <fstream>
+#include <math.h>
+
+#include "IconsForkAwesome.h"
+
+double displayTest(const double& x, IPlugEffect* plug) {
+  return plug->sigmoid.get(x * 10. - 5. + 0.5)-0.5;
+}
 
 
 IPlugEffect::IPlugEffect(const InstanceInfo& info) 
-: Plugin(info, MakeConfig(kNumParams, kNumPrograms))
+: Plugin(info, MakeConfig(kNumParams, kNumPrograms)), UIClosed(true), displayCount(0), isInit(false),
+atStartCount(0), dispcount(0)
 {
-  GetParam(kP)->InitDouble("p", 0.3, -0.3, .99, 0.01, "");
-  GetParam(kI)->InitDouble("i", .8, 0.1, 10.0, 0.01, "");
-  GetParam(kD)->InitDouble("d", 1.0, -1.0, 2.0, 0.01, "");
-  GetParam(kMode)->InitEnum("Type", 0, 3, "", IParam::kFlagsNone, "", "Weaver", "Single SSB", "FFT");
+  GetParam(kTresh)->InitDouble("Tresh", 1., 0.01, 2., 0.01, "");
+  GetParam(kStiff)->InitDouble("Stiff", 1., 0., 10.0, 0.01, "");
 
+  GetParam(kGain)->InitDouble("Gain", 1., 0.1, 3., 0.001, "");
+  GetParam(kInGain)->InitDouble("Input Gain", 1., 0.1, 20., 0.001, "");
+  GetParam(kDisplay)->InitBool("Display", true);
+  GetParam(kLog)->InitBool("Log", true);
 
-  for (int i = 0; i < 2; i++) {
-    last_out[i] = 0.0;
+  for (int i = 0; i < derDispSize; i++) {
+    input_env[i] = 0.0;
+    output_env[i] = 0.0;
   }
 
 
@@ -27,6 +38,7 @@ IPlugEffect::IPlugEffect(const InstanceInfo& info)
     pGraphics->AttachCornerResizer(EUIResizerMode::Scale, false);
     pGraphics->AttachPanelBackground(IColor(255, 255, 190, 100));
     pGraphics->LoadFont("Roboto-Regular", ROBOTO_FN);
+    pGraphics->LoadFont("ForkAwesome", FORK_AWESOME_FN);
 
     pGraphics->AttachBubbleControl();
 
@@ -51,9 +63,60 @@ IPlugEffect::IPlugEffect(const InstanceInfo& info)
      IText(16.f, EAlign::Center) // Label text
     };
 
+    const IVStyle style_gray{
+     true, // Show label
+     true, // Show value
+     {
+       IColor(0, 255, 200, 100), // Background
+       IColor(200, 200, 200, 230), // Foreground
+       DEFAULT_PRCOLOR, // Pressed
+       COLOR_BLACK, // Frame
+       DEFAULT_HLCOLOR, // Highlight
+       DEFAULT_SHCOLOR, // Shadow
+       COLOR_DARK_GRAY, // Extra 1
+       DEFAULT_X2COLOR, // Extra 2
+       DEFAULT_X3COLOR  // Extra 3
+     }, // Colors
+     IText(16.f, EAlign::Center) // Label text
+    };
+
+    const IVStyle style_white{
+     true, // Show label
+     true, // Show value
+     {
+       IColor(0, 255, 200, 100), // Background
+       IColor(200, 200, 200, 230), // Foreground
+       DEFAULT_PRCOLOR, // Pressed
+       COLOR_BLACK, // Frame
+       DEFAULT_HLCOLOR, // Highlight
+       DEFAULT_SHCOLOR, // Shadow
+       COLOR_WHITE, // Extra 1
+       DEFAULT_X2COLOR, // Extra 2
+       DEFAULT_X3COLOR  // Extra 3
+     }, // Colors
+     IText(16.f, EAlign::Center) // Label text
+    };
+
+    const IVStyle style_violet{
+     true, // Show label
+     true, // Show value
+     {
+       IColor(0, 255, 200, 100), // Background
+       IColor(200, 200, 200, 230), // Foreground
+       DEFAULT_PRCOLOR, // Pressed
+       COLOR_BLACK, // Frame
+       DEFAULT_HLCOLOR, // Highlight
+       DEFAULT_SHCOLOR, // Shadow
+       COLOR_VIOLET, // Extra 1
+       DEFAULT_X2COLOR, // Extra 2
+       DEFAULT_X3COLOR  // Extra 3
+     }, // Colors
+     IText(16.f, EAlign::Center) // Label text
+    };
+
     const IText forkAwesomeText{ 20.f, "ForkAwesome" };
 
-    const int nRows = 2;
+    const int nRows = 3;
     const int nCols = 4;
 
     int cellIdx = -1;
@@ -70,16 +133,30 @@ IPlugEffect::IPlugEffect(const InstanceInfo& info)
       pGraphics->AttachControl(new ITextControl(nextCell().GetFromTop(20.f), label, style.labelText));
     };
 
+    auto cell = [&](int r, int c) {
+      return b.GetGridCell(r * nCols + c, nRows, nCols).GetPadded(-5.);
+    };
 
-    pGraphics->AttachControl(new IVKnobControl(nextCell().GetMidVPadded(buttonSize), kP, "p", style, false), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVKnobControl(nextCell().GetMidVPadded(buttonSize), kI, "i", style, false), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVKnobControl(nextCell().GetMidVPadded(buttonSize), kD, "d", style, false), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVSlideSwitchControl(nextCell().GetMidVPadded(buttonSize), kMode, "mode", style, true), kNoTag, "vcontrols");
+
+    pGraphics->AttachControl(new IVKnobControl(cell(0, 0).GetMidVPadded(buttonSize), kInGain, "Input Gain", style, false), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVKnobControl(cell(0, 1).GetMidVPadded(buttonSize), kTresh, "Tresh", style, false), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVKnobControl(cell(0, 2).GetMidVPadded(buttonSize), kStiff, "Stiff", style, false), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVKnobControl(cell(0, 3).GetMidVPadded(buttonSize), kGain, "Gain", style, false), kNoTag, "vcontrols");
+
+
+    pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 3)), "", style_gray, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams, "LFO");
+    pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 3)), "", style_white, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams + 1, "LFO");
+    pGraphics->AttachControl(new IVDisplayControl(cell(1, 0).Union(cell(2, 3)), "", style_violet, EDirection::Horizontal, 0., 1., 0., sizePlot), kNumParams + 2, "LFO");
+
+    const double dist = 30.;
+    pGraphics->AttachControl(new ITextToggleControl(cell(1, 0).GetGridCell(0, 0, 2, 2).GetFromTop(dist).GetFromLeft(dist), kDisplay, ICON_FK_SQUARE_O, ICON_FK_CHECK_SQUARE, forkAwesomeText), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new ITextToggleControl(cell(1, 0).GetGridCell(0, 1, 2, 2).GetFromTop(dist).GetFromLeft(dist), kLog, ICON_FK_SQUARE_O, ICON_FK_CHECK_SQUARE, forkAwesomeText), kNoTag, "vcontrols");
+    
   };
+
   
 
 #endif
-  //testPlug();
 }
 
 
@@ -88,80 +165,89 @@ IPlugEffect::IPlugEffect(const InstanceInfo& info)
 void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames) {
   const int nChans = NOutChansConnected();
   const double sampleRate = GetSampleRate();
-  Math36::setSampleRate(sampleRate);
-  for (int i = 0; i < 2; i++)
-    _pid[i].setPID(GetParam(kP)->Value(), GetParam(kI)->Value(), GetParam(kD)->Value());
+  double stiff = GetParam(kStiff)->Value();
+  bool changed = sigmoid.setSteepness(stiff* stiff);
+  
+  double tresh = GetParam(kTresh)->Value();
+  tresh *= tresh;
 
-  //_pid[0].setTimestep(1.0 / sampleRate);
-  //_pid[1].setTimestep(1.0 / sampleRate);
+  double gain = GetParam(kGain)->Value();
+  double inGain = GetParam(kInGain)->Value();
+  gain *= gain;
+  inGain *= inGain;
+
+  bool use_log10 = GetParam(kLog)->Value(),
+    print_disp = GetParam(kDisplay)->Value();
+
+  double inenv, outenv;
+
+  if (!UIClosed)
+    if (atStartCount < 100) atStartCount++;
+    else if (displayCount % 1 == 0) GetUI()->SetAllControlsDirty();
 
   for (int i = 0; i < nFrames; i++) {
+    inenv = 0.0;
+    outenv = 0.0;
     for (int j = 0; j < 2; j++){
-      //outputs[j][i] = last_out[j];
-      last_out[j] = _pid[j].get(inputs[j][i], last_out[j]);
-
-      if (_audiodb[j].get(last_out[j]) > 0.0)
-        last_out[j] = 0.0;
-      outputs[j][i] = last_out[j];
-      
-        
+      outputs[j][i] = gain * 2.0 * tresh * (sigmoid.get(inGain * inputs[j][i] / tresh / 2.0 + 0.5) - 0.5) / inGain;
+      inenv = std::max(inenv, inGain * inputs[j][i]);
+      outenv = std::max(outenv, outputs[j][i]);
     }
-  }
-  
-}
 
+    if (print_disp && !UIClosed) {
+      input_env[dispcount] = inenv;
+      output_env[dispcount] = outenv;
+      dispcount = (dispcount + 1) % derDispSize;
+      inenv = 0.0;
+      outenv = 0.0;
+      for (int i = 0; i < derDispSize; i++) {
+        inenv = std::max(inenv, input_env[i]);
+        outenv = std::max(outenv, output_env[i]);
+      }
 
-const std::string file_path = "E:\\\Programmes\\VS2017\\iPlug2-master\\36Effects\\36PID\\build-win\\test.txt";
-
-
-void IPlugEffect::testPlug()
-{
-  std::fstream file(file_path, std::ios::out | std::ios::trunc);
-
-  const int size = 500,
-    nloop = 10,
-    gate_s = 300,
-    gate_e = 0;
-  sample** inputs, ** outputs;
-
-  outputs = new sample * [2];
-  inputs = new sample * [2];
-
-  for (int i = 0; i < 2; i++) {
-    outputs[i] = new sample[size];
-    inputs[i] = new sample[size];
-  }
-
-  for (int l = 0; l < nloop; l++) {
-    for (int s = 0; s < size; s++) {
-      for (int i = 0; i < 2; i++) {
-        inputs[i][s] = 0.25 * sin(double(s + l * size) * 0.01)
-          + 0.15 * sin(double(s + l * size) * 0.006)
-          + 0.1 * sin(double(s + l * size) * 0.03) + 0.2
-          + rand() % 10 * 0.002;
-
-        if (s + l * size > gate_s && s + l * size < gate_e)
-          inputs[i][s] = 0.0;
+      if (use_log10) {
+        mRLSender.PushData({ kNumParams, {float(log(inenv  + 1.0))} });
+        mRLSender.PushData({ kNumParams + 1, {float(log(tresh + 1.0))} });
+        mRLSender.PushData({ kNumParams + 2, {float(log(outenv  + 1.0))} });
+      }
+      else {
+        mRLSender.PushData({ kNumParams, {float((inenv))} });
+        mRLSender.PushData({ kNumParams + 1, {float((tresh))} });
+        mRLSender.PushData({ kNumParams + 2, {float((tresh * outenv))} });
       }
     }
 
-    ProcessBlock(inputs, outputs, size);
-
-    for (int s = 0; s < size; s++) {
-      file << s + l * size << '\t' << inputs[0][s] << '\t' << outputs[0][s] << std::endl;
-    }
   }
 
 
-  for (int i = 0; i < 2; i++) {
-    delete[] outputs[i];
-    delete[] inputs[i];
-  }
-  delete[] outputs;
-  delete[] inputs;
 
-  file.close();
-  system("pause");
+
+  isInit = true;
+  ++displayCount %= displayLoop;
+
 }
+
+void IPlugEffect::OnIdle()
+{
+  mRLSender.TransmitData(*this);
+}
+
+void IPlugEffect::OnUIClose()
+{
+  Plugin::OnUIClose();
+  GetUI()->SetAllControlsClean();
+  UIClosed = true;
+  Sleep(500);
+}
+
+void IPlugEffect::OnUIOpen()
+{
+  Plugin::OnUIOpen();
+  displayCount = 0;
+  UIClosed = false;
+}
+
+const std::string file_path = "E:\\\Programmes\\VS2017\\iPlug2-master\\36Effects\\36PID\\build-win\\test.txt";
+
 
 #endif

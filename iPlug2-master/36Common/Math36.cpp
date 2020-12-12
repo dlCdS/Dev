@@ -376,10 +376,10 @@ double Math36::Sigmoid::linear(const double& x) const
   return x;
 }
 
-void Math36::Sigmoid::setSteepness(const double& steepness)
+bool Math36::Sigmoid::setSteepness(const double& steepness)
 {
   if (steep == steepness)
-    return;
+    return false;
   if (steepness < 0.0) {
     type = SType::REV;
     steep = -steepness;
@@ -395,4 +395,5 @@ void Math36::Sigmoid::setSteepness(const double& steepness)
   else {
     type = SType::LIN;
   }
+  return true;
 }
