@@ -94,10 +94,11 @@ atStartCount(0)
      {COLOR_DARK_GRAY , [&](double x) { return displayShapePolar(x * 2.0, this); } },
       }, sizePlot, "", style, -0.85, .85), kNoTag, "vcontrols");
   };
-
+  /*
   createTopoCartesianShape();
   createTopoPolarShape();
   createSigmoidShape();
+  */
 #endif
 }
 
@@ -110,12 +111,12 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
   bool changed = (power == GetParam(kPower)->Value());
   power = GetParam(kPower)->Value();
 
-  if (!UIClosed) {
+  if (!UIClosed || true) {
     if (atStartCount < 100) {
       atStartCount++;
       changed = true;
     }
-    if (changed && atStartCount >= 100) {
+    if ((changed && atStartCount >= 100) || true) {
       GetUI()->SetAllControlsDirty();
     }
   }
