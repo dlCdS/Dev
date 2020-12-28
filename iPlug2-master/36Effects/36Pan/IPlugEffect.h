@@ -23,6 +23,8 @@ enum EParams
 using namespace iplug;
 using namespace igraphics;
 
+
+
 class IPlugEffect final : public Plugin
 {
 public:
@@ -30,10 +32,9 @@ public:
 
 #if IPLUG_DSP // http://bit.ly/2S64BDd
   void ProcessBlock(sample** inputs, sample** outputs, int nFrames) override;
-  const sample& getInput(const int& lr, const int& index, sample **inputs) const;
 #endif
 private:
   sample last_buffer[2][maxBuffSize],
     ms_m[maxBuffSize], ms_s[2][maxBuffSize], last_ms_s[2][maxBuffSize];
-  bool work_buf_on;
+  bool work_buf_on; 
 };

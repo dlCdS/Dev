@@ -1,12 +1,12 @@
-#define PLUG_NAME "36Pan"
-#define PLUG_MFR "36Effect"
+#define PLUG_NAME "36WeirdDelay"
+#define PLUG_MFR "36"
 #define PLUG_VERSION_HEX 0x00010000
-#define PLUG_VERSION_STR "2.0.0"
-#define PLUG_UNIQUE_ID '36Pa'
-#define PLUG_MFR_ID '36Ef'
+#define PLUG_VERSION_STR "1.0.0"
+#define PLUG_UNIQUE_ID '36WD'
+#define PLUG_MFR_ID '36'
 #define PLUG_URL_STR "https://iplug2.github.io"
 #define PLUG_EMAIL_STR "spam@me.com"
-#define PLUG_COPYRIGHT_STR "Copyright 2019 36 Inc"
+#define PLUG_COPYRIGHT_STR "Copyright 2020 36 Inc"
 #define PLUG_CLASS_NAME IPlugEffect
 
 #define BUNDLE_NAME "36Effect"
@@ -25,20 +25,20 @@
 #define PLUG_DOES_STATE_CHUNKS 0
 #define PLUG_HAS_UI 1
 #define PLUG_WIDTH 400
-#define PLUG_HEIGHT 200
+#define PLUG_HEIGHT 100
 #define PLUG_FPS 60
 #define PLUG_SHARED_RESOURCES 0
 
 #define AUV2_ENTRY IPlugEffect_Entry
-#define AUV2_ENTRY_STR "36Pan_Entry"
+#define AUV2_ENTRY_STR "IPlugEffect_Entry"
 #define AUV2_FACTORY IPlugEffect_Factory
 #define AUV2_VIEW_CLASS IPlugEffect_View
-#define AUV2_VIEW_CLASS_STR "36Pan_View"
+#define AUV2_VIEW_CLASS_STR "IPlugEffect_View"
 
 #define AAX_TYPE_IDS 'EFN1', 'EFN2'
 #define AAX_TYPE_IDS_AUDIOSUITE 'EFA1', 'EFA2'
-#define AAX_PLUG_MFR_STR "36Effect"
-#define AAX_PLUG_NAME_STR "36Pan\nIPEF"
+#define AAX_PLUG_MFR_STR "Acme"
+#define AAX_PLUG_NAME_STR "IPlugEffect\nIPEF"
 #define AAX_PLUG_CATEGORY_STR "Effect"
 #define AAX_DOES_AUDIOSUITE 1
 

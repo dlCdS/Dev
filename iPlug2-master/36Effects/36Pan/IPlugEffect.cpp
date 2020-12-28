@@ -15,7 +15,6 @@ IPlugEffect::IPlugEffect(const InstanceInfo& info)
   GetParam(kMsCenterSide)->InitDouble("M/S C/S", 0.5, 0.0, 1.0, 0.01);
 
 
-
   for (int i = 0; i < maxBuffSize; i++) {
     last_buffer[0][i] = 0;
     last_buffer[1][i] = 0;
@@ -59,7 +58,7 @@ IPlugEffect::IPlugEffect(const InstanceInfo& info)
 
     const IText forkAwesomeText{ 20.f, "ForkAwesome" };
 
-    const int nRows = 2;
+    const int nRows = 2; 
     const int nCols = 4;
 
     int cellIdx = -1;
@@ -78,16 +77,17 @@ IPlugEffect::IPlugEffect(const InstanceInfo& info)
 
 
     pGraphics->AttachControl(new IVKnobControl(nextCell().GetMidVPadded(buttonSize), kPan, "Pan", style, false), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVSlideSwitchControl(nextCell().GetMidVPadded(buttonSize), kMsType, "M/S type", style, true), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVSlideSwitchControl(nextCell().GetMidVPadded(buttonSize), kMsType, "M/S type", style, true), kNoTag, "vcontrols")->SetAnimationEndActionFunction([pGraphics](IControl* pControl) {
+      bool sync = pControl->GetValue() <= 0.5;
+      pGraphics->HideControl(kMsCenterSide, sync);
+      });
     pGraphics->AttachControl(new IVKnobControl(nextCell().GetMidVPadded(buttonSize), kMonoComp, "Mono Correct", style, false), kNoTag, "vcontrols");
     pGraphics->AttachControl(new IVKnobControl(nextCell().GetMidVPadded(buttonSize), kRLDist, "R/L Dist - leg", style, false), kNoTag, "vcontrols");
 
     pGraphics->AttachControl(new IVKnobControl(nextCell().GetMidVPadded(buttonSize), kPronon, "Pronon", style, false), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVKnobControl(nextCell().GetMidVPadded(buttonSize), kMsCenterSide, "M/S C/S", style, false), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVKnobControl(nextCell().GetMidVPadded(buttonSize), kMsCenterSide, "M/S C/S", style, false), kNoTag, "vcontrols")->Hide(GetParam(kMsType)->Value()!=2);
     pGraphics->AttachControl(new IVKnobControl(nextCell().GetMidVPadded(buttonSize), kMonoLR, "Mono L/R", style, false), kNoTag, "vcontrols");
     pGraphics->AttachControl(new IVKnobControl(nextCell().GetMidVPadded(buttonSize), kEarsDist, "Ears Dist - leg", style, false), kNoTag, "vcontrols");
-
-
 
   };
 #endif
@@ -113,11 +113,16 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
   const double sampleRate = GetSampleRate();
 
   double pan = GetParam(kPan)->Value();
+
   double pro = GetParam(kPronon)->Value();
-  double delay = GetParam(kEarsDist)->Value() / soundSpeed *pan;
+  double delay = GetParam(kEarsDist)->Value() / soundSpeed * pan;
 
   double srcDist = (1.0 - GetParam(kRLDist)->Value())/2.0;
-  double gain[2] = { (1.0 - pan * pro), (1.0 + pan * pro) };
+  double gain[2] = { 1.0, 1.0 };
+  double panmult(1.0);
+  if (pro < 0) {
+    gain[1] += pro;
+  } else gain[0] -= pro;
 
   int MS_type = GetParam(kMsType)->Value();
   double MS_CS = GetParam(kMsCenterSide)->Value();
@@ -127,6 +132,8 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 
   int padding = (double)(delay * sampleRate);
   int id1(1), id2(0);
+
+
 
   if (padding <= 0) {
     padding *= -1;
@@ -172,14 +179,12 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
     // Hard MS
     if (MS_type == 2) {
       for (int s = 0; s < nFrames; s++) {
-        ms_m[s] = inputs[0][s] + inputs[1][s];
-        ms_s[0][s] = 2.0 * inputs[id1][s] - inputs[id2][s];
-        ms_s[1][s] = 2.0 * inputs[id2][s] - inputs[id1][s];
+        ms_m[s] = (inputs[0][s] + inputs[1][s]) / 2.0;
+        ms_s[0][s] = (2.0 * inputs[id1][s] - inputs[id2][s]) / 3.0;
+        ms_s[1][s] = (2.0 * inputs[id2][s] - inputs[id1][s]) / 3.0;
 
-        outputs[0][s] = ((1.0 - MS_CS) * ms_m[s] + MS_CS * ( gain[id1] * ms_s[0][s] + gain[id2] * chooseBuffer(ms_s, last_ms_s, 1, s, padding, nFrames)))/2.0;
-        outputs[1][s] = ((1.0 - MS_CS) * ms_m[s] + MS_CS * ( gain[id1] * ms_s[1][s] + gain[id2] * chooseBuffer(ms_s, last_ms_s, 0, s, padding, nFrames)))/2.0;
-
-
+        outputs[0][s] = (1.0 - MS_CS) * ms_m[s] + MS_CS * (gain[id1] * ms_s[0][s] + gain[id2] * chooseBuffer(ms_s, last_ms_s, 1, s, padding, nFrames));
+        outputs[1][s] = (1.0 - MS_CS) * ms_m[s] + MS_CS * (gain[id1] * ms_s[1][s] + gain[id2] * chooseBuffer(ms_s, last_ms_s, 0, s, padding, nFrames));
       }
 
       for (int s = 0; s < nFrames; s++) {
@@ -204,4 +209,5 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
     }
   }
 }
+
 #endif
