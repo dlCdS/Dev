@@ -118,7 +118,13 @@ void CudaPlaneVib::draw()
 void CudaPlaneVib::mainLoop()
 { 
 	Clocks::start("CudaPlaneVib loop");
-	for(int i=0; i<vdata.iteration; i++)
-		KernelVib::vibrationModel1(d_a, d_v, d_h, d_avg, _size.w * _size.h, d_sdl_param, d_vdata);
+	for(int i=0; i<vdata.iteration; i++){
+		Clocks::start("CudaPlaneVib acc");
+		KernelVib::vibrationModel1Acc(d_a, d_v, d_h, d_avg, _size.w * _size.h, d_sdl_param, d_vdata);
+		Clocks::stop("CudaPlaneVib acc");
+		Clocks::start("CudaPlaneVib pos");
+		KernelVib::vibrationModel1Pos(d_a, d_v, d_h, d_avg, _size.w * _size.h, d_sdl_param, d_vdata);
+		Clocks::stop("CudaPlaneVib pos");
+	}
 	Clocks::stop("CudaPlaneVib loop");
 }

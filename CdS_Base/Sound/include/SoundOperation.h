@@ -8,7 +8,7 @@
 
 const double STK_PI = 3.141592653589793238460;
 
-typedef std::complex<stk::StkFloat> Complex;
+typedef std::complex<ge_d> Complex;
 typedef std::vector<Complex> CArray;
 
 

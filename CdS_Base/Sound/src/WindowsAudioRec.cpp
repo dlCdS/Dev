@@ -81,7 +81,7 @@ void WindowsAudioRec::recordLoop()
 					int32_t temp = h.lpData[i] | h.lpData[i + 1] << 8;// | h.lpData[i + 2] << 16 | h.lpData[i + 3] << 24;
 					if((count++%1)==0){
 						std::cout << (stk::StkFloat)temp << std::endl;
-						res[i / 4] = { (stk::StkFloat)temp , 0.0 };
+						res[i / 4] = { ge_d(temp) , 0.0 };
 					}
 				}
 

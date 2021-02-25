@@ -21,7 +21,8 @@ ContainerWidget* maindisplay;
 const ge_i frame_duration = -1;
 const ge_i frame_rate = 1;
 const ge_i size = 200;
-const ge_pi wsize = { 1920, 1080};
+ const ge_pi wsize = { 1920, 1080};
+//const ge_pi wsize = { 1920*2, 1080*2 };
 const ge_i factor = 1;
 const ge_d ratio = 0.5;
 const ge_d rotate = -45.0;
@@ -29,15 +30,9 @@ const ge_pd center = { -0.0, 1.0 };
 
 const bool play_sound = false;
 
-<<<<<<< HEAD
 //#define FRACTAL
 #define VIBRATION
-#define ANA_VIB
-=======
-// #define FRACTAL
-//#define VIBRATION
 //#define ANA_VIB
->>>>>>> 84371d6f4ce6bdee09373a0c276a33a9e999dce9
 
 bool step();
 
@@ -230,7 +225,7 @@ void vibrationModel() {
 
 	vibModel.setColourWidget(scw);
 
-	vibModel.generate(1.0, 1);
+	vibModel.generate(1.0, 10);
 
 	vibModel.addSource({ 0.501, 0.501 });
 }

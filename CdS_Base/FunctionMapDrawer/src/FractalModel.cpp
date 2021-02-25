@@ -133,8 +133,8 @@ void FractalModel::generate(const ge_pd& center, const ge_pd& contraction, const
 	loop() {
 		e(_transform, i, j) = { 0.0 };
 
-		e(_c, i, j) = { ge_d(i - _size.w / 2) * 2.0 * _contraction.w / ge_d(_size.w) + _center.w,
-						ge_d(j - _size.h / 2) * 2.0 * _contraction.h / ge_d(_size.h) + _center.h };
+		e(_c, i, j) = { ge_d(ge_d(i - _size.w / 2) * 2.0 * _contraction.w / ge_d(_size.w) + _center.w),
+						ge_d(ge_d(j - _size.h / 2) * 2.0 * _contraction.h / ge_d(_size.h) + _center.h) };
 		e(_cur, i, j) = e(_c, i, j);
 		if ((i == 0 && (j == _size.h - 1 || j == 0)) || (i == _size.w - 1 && (j == _size.h - 1 || j == 0)))
 			Log(LINFO, i, " ", j, " ", e(_c, i, j));

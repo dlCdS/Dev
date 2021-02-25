@@ -367,8 +367,8 @@ void StereoSample::setSize(const ge_i& bufferSize, const ge_i& frameSize, const 
 void StereoSample::addTick(const stk::StkFloat& ltick, const stk::StkFloat& rtick)
 {
 	if (currentTick >= 0) {
-		channel.buffer[0][currentTick] = { ltick, 0.0 };
-		channel.buffer[1][currentTick] = { rtick, 0.0 };
+		channel.buffer[0][currentTick] = { ge_d(ltick), 0.0 };
+		channel.buffer[1][currentTick] = { ge_d(rtick), 0.0 };
 		
 	}
 	currentTick++;

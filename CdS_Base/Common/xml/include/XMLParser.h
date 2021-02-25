@@ -190,13 +190,13 @@ namespace XML {
 
 	class Double : public Field {
 	public:
-		Double(double *val) : _val(val) {}
-		virtual void set(const std::string &value) { Common::SafeCast<double>(*_val, value); }
-		virtual std::string get() const { return Parser::cast<double>(*_val); }
+		Double(ge_d*val) : _val(val) {}
+		virtual void set(const std::string &value) { Common::SafeCast<ge_d>(*_val, value); }
+		virtual std::string get() const { return Parser::cast<ge_d>(*_val); }
 		virtual void *getVar() { return _val; }
 		virtual Field *getCopy() { return new Double(_val); }
 	private:
-		double *_val;
+		ge_d *_val;
 	};
 
 	class Bool : public Field {

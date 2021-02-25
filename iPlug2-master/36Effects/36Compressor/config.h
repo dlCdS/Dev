@@ -2,15 +2,15 @@
 #define PLUG_MFR "36"
 #define PLUG_VERSION_HEX 0x00010000
 #define PLUG_VERSION_STR "1.0.0"
-#define PLUG_UNIQUE_ID 'Ipef'
-#define PLUG_MFR_ID '36'
+#define PLUG_UNIQUE_ID '36Co'
+#define PLUG_MFR_ID '36Ef'
 #define PLUG_URL_STR "https://iplug2.github.io"
 #define PLUG_EMAIL_STR "spam@me.com"
 #define PLUG_COPYRIGHT_STR "Copyright 2019 Acme Inc"
 #define PLUG_CLASS_NAME IPlugEffect
 
 #define BUNDLE_NAME "36Compressor_d"
-#define BUNDLE_MFR "36"
+#define BUNDLE_MFR "36Ef"
 #define BUNDLE_DOMAIN "com"
 
 #define SHARED_RESOURCES_SUBPATH "36Effect"

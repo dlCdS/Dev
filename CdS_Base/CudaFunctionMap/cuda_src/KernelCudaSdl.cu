@@ -245,7 +245,7 @@ __global__ void copy_double_board(ge_d* val, void* pixel_surface, CudaSdlInterfa
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	if (id < param->size) {
-		Uint32 p = colorFromScalarBlackWhite(val[id], n_param->from, n_param->range);
+		Uint32 p = colorFromScalar(val[id], n_param->from, n_param->range);
 		setPixel(pixel_surface, id % param->w, id / param->w, param, p);
 	}
 }
@@ -309,9 +309,9 @@ __global__ void to_freq_array(Complex* lbuffer, Complex* rbuffer, FreqPick* freq
 	stk::StkFloat r, l;
 	ge_d* cast;
 	Complex c = rbuffer[i];
-	cast = (stk::StkFloat*) &rbuffer[i];
+	cast = (ge_d*) &rbuffer[i];
 	r = cast[0] * cast[0] + cast[1] *cast[1];
-	cast = (stk::StkFloat*) &(lbuffer[i]);
+	cast = (ge_d*) &(lbuffer[i]);
 	l = cast[0] * cast[0] + cast[1] * cast[1];
 	//r = sqrt(r);
 	//l = sqrt(l);
@@ -352,7 +352,7 @@ __global__ void invert_int_freq(FreqPick* int_freq, FreqPick* int_freq_last)
 __global__ void vibration_model1_acceleration(ge_d* a, ge_d* h, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
-	const ge_d sqrt2(1.4142136);
+	const ge_d sqrt2(1.4142136), rev_sqrt2(0.7071067623);
 	if (id < param->size) {
 		int x(id % param->w), y(id / param->w), cur_pos;
 		for (int i = -1; i <= 1; i++) {
@@ -366,7 +366,7 @@ __global__ void vibration_model1_acceleration(ge_d* a, ge_d* h, CudaSdlInterface
 						}
 						else { // one of the corner tile
 							cur_pos = (x + i) + (y + j) * param->w;
-							a[id] += (h[cur_pos] - h[id])/sqrt2;
+							a[id] += (h[cur_pos] - h[id])* rev_sqrt2;
 						}
 					}
 				}
@@ -502,16 +502,18 @@ CUDA_ERROR KernelFreq::interpolateFreq(FreqPick* freq, FreqPick* int_freq, FreqP
 	return KernelCallers::check_exec("invert_int_freq");
 }
 
-CUDA_ERROR KernelVib::vibrationModel1(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, uint dimension, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata)
+CUDA_ERROR KernelVib::vibrationModel1Acc(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, uint dimension, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata)
 {
 	vibration_model1_acceleration << < (dimension / THREADS_PER_BLOCK + 1), THREADS_PER_BLOCK, 1 >> > (a, h, param, vdata);
-	CUDA_ERROR status = KernelCallers::check_exec("vibration_model1_acceleration");
-	if (status != CUDA_SUCCESS)
-		return status;
+	return KernelCallers::check_exec("vibration_model1_acceleration");
+}
+
+CUDA_ERROR KernelVib::vibrationModel1Pos(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, uint dimension, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata)
+{
+
 	vibration_model1_position << < (dimension / THREADS_PER_BLOCK + 1), THREADS_PER_BLOCK, 1 >> > (a, v, h, avg, param, vdata);
 	return KernelCallers::check_exec("vibration_model1_position");
 }
-
 CUDA_ERROR KernelVib::anaVibrationModel1(thrust::complex<ge_d> * cur, ge_d* h, uint dimension, CudaSdlInterface::Parameter* param, CudaAnalyticalVib::AnaVibData* avdata)
 {
 	ana_vibration_model1 << < (dimension / THREADS_PER_BLOCK + 1), THREADS_PER_BLOCK, 1 >> > (cur, h, param, avdata);

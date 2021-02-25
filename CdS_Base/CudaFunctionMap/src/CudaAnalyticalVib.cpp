@@ -47,7 +47,7 @@ void CudaAnalyticalVib::testIntegration()
 			for (int i = -range; i <= range; i++) {
 				phi = (x + ge_d(j * h) - xp) * (x + ge_d(j * h) - xp) + (y + ge_d(i * w) - yp) * (y + ge_d(i * w) - yp); 
 				phi = sqrt(phi);
-				res += thrust::polar(1.0, -2 * M_PI * omegv + phi / speed);
+				res += thrust::polar<ge_d, ge_d>(1.0, -2 * M_PI * omegv + phi / speed);
 			}
 			
 		}

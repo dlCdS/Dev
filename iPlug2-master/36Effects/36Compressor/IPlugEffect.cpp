@@ -270,11 +270,12 @@ atStartCount(0), bsendDiff(false), breplot(false), pro_pos(0)
   };
 
   UIClosed = false;
+  SetLatency(PLUG_LATENCY);
 
   // file2 << "started" << std::endl;
   // if(!mLatencyDelay)
     // file2 << "no latency delay" << std::endl;
-  if(testPlugin)
+  if(false)
     testPlug();
 #endif
 }
@@ -286,6 +287,7 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 {
   const int nChans = NOutChansConnected();
   const double sampleRate = GetSampleRate();
+  SetLatency(PLUG_LATENCY);
 
   double pan = GetParam(dcR)->Value();
   tresh = GetParam(threshold)->Value();
