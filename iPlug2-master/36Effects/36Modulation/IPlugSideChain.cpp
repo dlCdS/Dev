@@ -4,10 +4,11 @@
 IPlugSideChain::IPlugSideChain(const InstanceInfo& info)
 : Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
-  GetParam(kModulType)->InitEnum("Type", 0, 4, "", IParam::kFlagsNone, "", "X", "Env", "/", "Follow");
+  GetParam(kModulType)->InitEnum("Type", 0, 4, "", IParam::kFlagsNone, "", "Mult", "Env", "Divide", "Switch");
   GetParam(kIsSidechained)->InitEnum("Sidechained", 0, 2, "", IParam::kFlagsNone, "", "Nop", "Yes");
 
   GetParam(kDivide)->InitDouble("Divide", 1.0, 1.0, 10., 0.01);
+  GetParam(kSmooth)->InitEnum("Style", 0, 3, "", IParam::kFlagsNone, "", "H", "S", "C");
 
 
   mMakeGraphicsFunc = [&]() {
@@ -59,11 +60,17 @@ IPlugSideChain::IPlugSideChain(const InstanceInfo& info)
 
     pGraphics->AttachControl(new IVSlideSwitchControl(cell(0, 0).GetMidVPadded(buttonSize), kIsSidechained, "Sidechained", style, true), kNoTag, "vcontrols");
 
-    pGraphics->AttachControl(new IVKnobControl(cell(0, 3).GetMidVPadded(buttonSize), kDivide, "Divide", style, false), kNoTag, "vcontrols")->Hide(true);
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(0, 3).GetMidVPadded(buttonSize), 
+      kSmooth, "Style", style, true), kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() <= 0.7));
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(0, 1).Union(cell(0, 2)).GetMidVPadded(buttonSize), kModulType, "M/S type", style, true), kNoTag, "vcontrols")->SetAnimationEndActionFunction([pGraphics](IControl* pControl) {
+    pGraphics->AttachControl(new IVKnobControl(cell(0, 3).GetMidVPadded(buttonSize),
+      kDivide, "Divide", style, false), kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() < 0.5 || GetParam(kModulType)->Value() > 0.7));
+
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(0, 1).Union(cell(0, 2)).GetMidVPadded(buttonSize), kModulType, "Modulation Type", style, true), kNoTag, "vcontrols")->SetAnimationEndActionFunction([pGraphics](IControl* pControl) {
       bool sync = (pControl->GetValue() < 0.5 || pControl->GetValue() > 0.7);
+      bool sync2 = (pControl->GetValue() <= 0.7);
       pGraphics->HideControl(kDivide, sync);
+      pGraphics->HideControl(kSmooth, sync2);
       });
 
   };
@@ -88,6 +95,8 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
   static double der[4] = { 0.0, 0.0, 0.0, 0.0 };
   static double last[4] = { 0.0, 0.0, 0.0, 0.0 };
   const double epsilon = 0.0000001;
+  const int smooth = GetParam(kSmooth)->Value();
+  bool chanChange(false);
 
   for (int i=0; i < 4; i++) {
     bool connected = IsChannelConnected(ERoute::kInput, i);
@@ -113,14 +122,14 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
           outputs[c][s] = inputs[c][s] * inputs[c + 2][s];
           break;
         case 1:
-          if ((inputs[c + 2][s] + 1.0) >= 1.0)
             outputs[c][s] = inputs[c][s] * (inputs[c + 2][s] + 1.0) / 2.0;
+          break;
+        case 2:
+          if ((inputs[c + 2][s] + 2.0) >= 1.0)
+          outputs[c][s] = inputs[c][s] / ((inputs[c + 2][s] + 2.0)/2.0 * divide);
           else outputs[c][s] = inputs[c][s];
           break;
         case 3:
-          outputs[c][s] = inputs[c][s] / ((inputs[c + 2][s] + 2.0)/2.0 * divide);
-          break;
-        case 4:
           // Follow selected signal unless it is crossed by the other signal
           if ((inputs[c][s] - inputs[c + 2][s]) * (inputs[c][s] - inputs[c + 2][s]) < epsilon) { // signal crossing
             if (s == 0) {
@@ -131,7 +140,14 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
               der[c] = inputs[c][s] - inputs[c][s - 1];
               der[c + 2] = inputs[c + 2][s] - inputs[c + 2][s - 1];
             }
-            if (der[c] * der[c + 2] >= 0) { // same variation direction
+            chanChange = false;
+            if (smooth == 0)
+              chanChange = true;
+            else if (der[c] * der[c + 2] >= 0) {
+              if (smooth == 1) chanChange = true;
+            } else if (smooth == 2) chanChange = true;
+
+            if (chanChange) { // same variation direction
               if (inputs[c][s] >= 0) {
                 if (inputs[c][s] > inputs[c + 2][s]) selectedChan = 0;
                 else selectedChan = 1;
@@ -142,7 +158,6 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
               }
             }
           }
-
           if(selectedChan == 0)
             outputs[c][s] = inputs[c][s];
           else

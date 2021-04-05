@@ -11,6 +11,7 @@ enum EParams
   kModulType = 0,
   kIsSidechained,
   kDivide,
+  kSmooth,
   kNumParams
 };
 
