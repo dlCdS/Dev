@@ -269,8 +269,6 @@ atStartCount(0), bsendDiff(false), breplot(false), pro_pos(0)
    
   };
 
-  UIClosed = false;
-  SetLatency(PLUG_LATENCY);
 
   // file2 << "started" << std::endl;
   // if(!mLatencyDelay)
