@@ -21,7 +21,7 @@ ContainerWidget* maindisplay;
 const ge_i frame_duration = -1;
 const ge_i frame_rate = 1;
 const ge_i size = 200;
- const ge_pi wsize = { 1920, 1080};
+ const ge_pi wsize = { 100, 100};
 //const ge_pi wsize = { 1920*2, 1080*2 };
 const ge_i factor = 1;
 const ge_d ratio = 0.5;

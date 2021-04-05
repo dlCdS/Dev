@@ -470,8 +470,10 @@ const void IPlugEffect::updateDisplay(double& var, EParams param, bool & update)
 void IPlugEffect::dcBlock(sample** inputs)
 {
 }
+
 void IPlugEffect::OnIdle()
 {
+  SetLatency(PLUG_LATENCY);
   mOutSender.TransmitData(*this);
   mLimSender.TransmitData(*this);
 }
