@@ -84,15 +84,23 @@ namespace KernelFreq {
 
 __global__ void vibration_model1_acceleration(ge_d* a, ge_d* h, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata);
 
-
 __global__ void vibration_model1_position(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata);
  
+
+__global__ void vibration_model1_acceleration(char* a, char* h, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata);
+
+__global__ void vibration_model1_position(char* a, char* v, char* h, char* avg, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata);
+
 __global__ void ana_vibration_model1(thrust::complex<ge_d>* cur, ge_d* h, CudaSdlInterface::Parameter* param, CudaAnalyticalVib::AnaVibData* avdata);
 
 namespace KernelVib {
 	CUDA_ERROR vibrationModel1Acc(ge_d *a, ge_d *v, ge_d *h, ge_d *avg, uint dimension, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData *vdata);
 
 	CUDA_ERROR vibrationModel1Pos(ge_d* a, ge_d* v, ge_d* h, ge_d* avg, uint dimension, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata);
+
+	CUDA_ERROR vibrationModel1Acc(char* a, char* v, char* h, char* avg, uint dimension, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata);
+
+	CUDA_ERROR vibrationModel1Pos(char* a, char* v, char* h, char* avg, uint dimension, CudaSdlInterface::Parameter* param, CudaPlaneVib::VibData* vdata);
 
 	CUDA_ERROR anaVibrationModel1(thrust::complex<ge_d>* cur, ge_d* h, uint dimension, CudaSdlInterface::Parameter* param, CudaAnalyticalVib::AnaVibData* avdata);
 }

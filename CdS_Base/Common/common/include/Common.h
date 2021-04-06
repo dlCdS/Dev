@@ -112,7 +112,7 @@ private:
 
 #define COMMON_M_PI 3,1415926535
 
-#define ge_d float
+#define ge_d double
 #define ge_i int
 #define ge_c char
 

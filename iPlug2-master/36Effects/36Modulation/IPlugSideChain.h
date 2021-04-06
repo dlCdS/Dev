@@ -10,6 +10,8 @@ const int maxBuffSize = 14000;
 enum EParams
 {
   kModulType = 0,
+  kAmount,
+  kFromDB,
   kIsSidechained,
   kDivide,
   kDivideFollow,
@@ -48,7 +50,7 @@ public:
   bool mOutputChansConnected[2] = {};
   bool mSendUpdate = false;
 
-  sample delay_buffer[2][maxBuffSize];
+  sample delay_buffer[4][maxBuffSize];
   
   IPeakSender<4> mInputPeakSender;
   IPeakSender<2> mOutputPeakSender;

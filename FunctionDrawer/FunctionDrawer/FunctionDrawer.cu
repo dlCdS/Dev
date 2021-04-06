@@ -21,7 +21,12 @@ ContainerWidget* maindisplay;
 const ge_i frame_duration = -1;
 const ge_i frame_rate = 1;
 const ge_i size = 200;
+<<<<<<< HEAD
+const ge_pi wsize = { 200, 200 };
+// const ge_pi wsize = { 1920, 1080};
+=======
  const ge_pi wsize = { 100, 100};
+>>>>>>> 71f186f8845e4e47d75b4b1e97e71f8744f633fb
 //const ge_pi wsize = { 1920*2, 1080*2 };
 const ge_i factor = 1;
 const ge_d ratio = 0.5;
@@ -234,7 +239,7 @@ bool vibrationModelLoop() {
 	static ge_d t(0.0);
 	const ge_d freq(300.0), amp(1.0);
 	Clocks::start("vib init");
-	ge_d h(cos(2.0*M_PI/freq * t));
+	ge_d h(4.0*cos(2.0*M_PI/freq * t));
 	t += 1.0;
 	vibModel.setPressure(amp*h, 0);
 	Clocks::stop("vib init");

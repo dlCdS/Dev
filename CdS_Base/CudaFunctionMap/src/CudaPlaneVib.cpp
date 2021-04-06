@@ -86,7 +86,7 @@ void CudaPlaneVib::setPosition(const ge_d& value, const ge_i& src_id)
 {
 	ge_i offset(_sources[src_id].offset);
 	ge_d* d_hp = d_h + offset;
-	CUDA_ERROR status = cudaMemcpy(d_hp, &value, sizeof(ge_d), cudaMemcpyHostToDevice);
+	CUDA_ERROR status = cudaMemcpy(d_hp, &value, sizeof(char), cudaMemcpyHostToDevice);
 	if (status != CUDA_SUCCESS) {
 		Log(LERROR, "Failed to copy src heigh ", src_id);
 	}

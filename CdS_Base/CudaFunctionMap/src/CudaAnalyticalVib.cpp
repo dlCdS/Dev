@@ -70,7 +70,7 @@ void CudaAnalyticalVib::set(const ge_d& time, const ge_d& period, const ge_d& sp
 
 void CudaAnalyticalVib::mainLoop()
 {
-	KernelVib::anaVibrationModel1(d_c, d_h, _size.w * _size.h, d_sdl_param, d_avdata);
+	//KernelVib::anaVibrationModel1(d_c, d_h, _size.w * _size.h, d_sdl_param, d_avdata);
 }
 
 void CudaAnalyticalVib::copyAvdata()

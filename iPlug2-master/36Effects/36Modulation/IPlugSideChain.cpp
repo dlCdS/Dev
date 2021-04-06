@@ -7,6 +7,9 @@ IPlugSideChain::IPlugSideChain(const InstanceInfo& info)
   GetParam(kModulType)->InitEnum("Type", 0, 5, "", IParam::kFlagsNone, "", "Mult", "Env", "Divide", "Warp", "Switch");
   GetParam(kIsSidechained)->InitEnum("Sidechained", 0, 2, "", IParam::kFlagsNone, "", "Nop", "Yes");
 
+  GetParam(kAmount)->InitDouble("Amount", 1.0, .0, 1., 0.01);
+  GetParam(kFromDB)->InitDouble("FromDB ", 0., 0., 1., 0.001);
+
   GetParam(kDivide)->InitDouble("Divide", 1.0, 1.0, 10., 0.01);
   GetParam(kDivideFollow)->InitEnum("Normalize", 0, 2, "", IParam::kFlagsNone, "", "Nop", "Yes");
 
@@ -22,7 +25,7 @@ IPlugSideChain::IPlugSideChain(const InstanceInfo& info)
   GetParam(kAbsolute)->InitEnum("Absolute", 0, 2, "", IParam::kFlagsNone, "", "Nop", "Yes");
 
   for (int i = 0; i < maxBuffSize; i++)
-    for (int c = 0; c < 2; c++)
+    for (int c = 0; c < 4; c++)
       delay_buffer[c][i] = 0.0;
 
   mMakeGraphicsFunc = [&]() {
@@ -60,7 +63,7 @@ IPlugSideChain::IPlugSideChain(const InstanceInfo& info)
     const IText forkAwesomeText{ 20.f, "ForkAwesome" };
 
     const int nRows = 2;
-    const int nCols = 4;
+    const int nCols = 5;
 
     int cellIdx = -1;
 
@@ -72,35 +75,40 @@ IPlugSideChain::IPlugSideChain(const InstanceInfo& info)
       return b.GetGridCell(r * nCols + c, nRows, nCols).GetPadded(-5.);
     };
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(0, 0).GetMidVPadded(buttonSize), kIsSidechained, "Sidechained", style, true), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 0).GetMidVPadded(buttonSize), kAbsolute, "Absolute", style, true),
+    pGraphics->AttachControl(new IVKnobControl(cell(0, 0).GetMidVPadded(buttonSize),
+      kAmount, "Amount", style, false), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVKnobControl(cell(0, 1).GetMidVPadded(buttonSize),
+      kFromDB, "From DB", style, false), kNoTag, "vcontrols");
+
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 0).GetMidVPadded(buttonSize), kIsSidechained, "Sidechained", style, true), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 1).GetMidVPadded(buttonSize), kAbsolute, "Absolute", style, true),
       kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() > 3));
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 1).Union(cell(1, 3)).GetMidVPadded(buttonSize), 
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 2).Union(cell(1, 4)).GetMidVPadded(buttonSize), 
       kSmooth, "Style", style, true), kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() < 4));
 
-    pGraphics->AttachControl(new IVKnobControl(cell(1, 1).GetMidVPadded(buttonSize),
+    pGraphics->AttachControl(new IVKnobControl(cell(1, 2).GetMidVPadded(buttonSize),
       kDivide, "Divide", style, false), kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() != 2));
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 2).GetMidVPadded(buttonSize),
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 3).GetMidVPadded(buttonSize),
       kDivideFollow, "Normalize", style, false), kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() != 2));
 
 
-    pGraphics->AttachControl(new IVKnobControl(cell(1, 1).GetMidVPadded(buttonSize),
+    pGraphics->AttachControl(new IVKnobControl(cell(1, 2).GetMidVPadded(buttonSize),
       kDelay, "Delay", style, false), kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() != 3));
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 2).GetMidVPadded(buttonSize),
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 3).GetMidVPadded(buttonSize),
       kLookahead, "Lookahead", style, false), kNoTag, "vcontrols")->SetAnimationEndActionFunction([pGraphics](IControl* pControl) {
         bool sync = (pControl->GetValue() > 0.5);
         pGraphics->HideControl(kZeroTrunc, sync);
         })->Hide((GetParam(kModulType)->Value() != 3));
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 3).GetMidVPadded(buttonSize),
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 4).GetMidVPadded(buttonSize),
       kZeroTrunc, "Zero Trunc", style, false), kNoTag,
       "vcontrols")->Hide((GetParam(kModulType)->Value() != 3));
     
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(0, 1).Union(cell(0, 3)).GetMidVPadded(buttonSize), kModulType,
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(0, 2).Union(cell(0, 4)).GetMidVPadded(buttonSize), kModulType,
       "Modulation Type", style, true), kNoTag, "vcontrols")->SetAnimationEndActionFunction([pGraphics](IControl* pControl) {
       bool sync = (pControl->GetValue() <= 0.4 || pControl->GetValue() > 0.6);
       bool sync2 = (pControl->GetValue() < 0.9);
@@ -136,6 +144,8 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
   static int selectedChan[2] = { 0, 0 };
   static double der[4] = { 0.0, 0.0, 0.0, 0.0 };
   static double last[4] = { 0.0, 0.0, 0.0, 0.0 };
+  static double lastoutput[2] = { 0.0, 0.0 };
+
   const double epsilon = 0.0000001;
   const int smooth = GetParam(kSmooth)->Value();
   bool chanChange(false);
@@ -154,20 +164,48 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
   int curPos = 0, dprev, dnext; // Used for current, prev and next pos in buffer
   double factprev, factnext;
 
+  const double baseAmount = GetParam(kAmount)->Value();
+  double amount = baseAmount;
+  const double fromDb = GetParam(kFromDB)->Value();
+  static double sideDb[2] = { 0.0, 0.0 }; // measure of sidechain volume
+  static bool noAmount = false;
+
+  static double inDerAvg[4] = { 0.0, 0.0, 0.0, 0.0 }; // derivative avg of input
+  const double derCoef = 0.9;
+
+  static bool hasLatency = true, latencySetted = false;
+
+
   if (sidechained && type == 3) { // copy buffer for warp algo
     for (int s = 0; s < nFrames; s++) 
-      for (int c = 0; c < 2; c++) {
+      for (int c = 0; c < 4; c++) {
         delay_buffer[c][(s + delayRef) % maxBuffSize] = inputs[c][s];
       }
-    if (lookahead)
-      SetLatency(maxDelay);
+
+    if (lookahead) {
+      if (!hasLatency || !latencySetted) {
+        SetLatency(maxDelay);
+        hasLatency = true;
+        latencySetted = true;
+      }
+    }
+    else {
+      if (hasLatency || !latencySetted) {
+        SetLatency(0);
+        hasLatency = false;
+        latencySetted = true;
+      }
+    }
+  } else if (hasLatency || !latencySetted) {
+    SetLatency(0);
+    hasLatency = false;
+    latencySetted = true;
   }
 
   double divOffset = 1.0;
   if (follow)
     divOffset = 1.0 / divide;
   
-
   double value;
 
   for (int i=0; i < 4; i++) {
@@ -193,63 +231,78 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
           value = abs(inputs[c + 2][s]);
         else value = inputs[c + 2][s];
 
+        sideDb[c] = (1.0 - fromDb) * sideDb[c] + abs(inputs[c + 2][s]);
+
+        if (sideDb[c] >= 1.0) sideDb[c] = 1.0;
+        else if (sideDb[c] < epsilon) sideDb[c] = 0.0;
+
+        amount = sideDb[c]* baseAmount;
+
         switch (type) {
         case 0:
+          // neutral = 1.0
+          value = amount * value + (1.0 - amount);
+
           outputs[c][s] = inputs[c][s] * value;
           break;
+
         case 1:
+          // neutral = 1.0
+          value = amount * value + (1.0 - amount);
+
           if(absolute)
             outputs[c][s] = inputs[c][s] * value;
           else outputs[c][s] = inputs[c][s] * (value + 1.0) / 2.0;
           break;
+
         case 2:
+          
           if (absolute) value += divOffset;
           else value = (value + 1.0 ) / 2.0 + divOffset;
           if (value < divOffset) value = divOffset;
 
+          // neutral = 1.0 / divide
+          value = amount * value + (1.0 - amount) / divide;
+
           outputs[c][s] = inputs[c][s] / (value * divide);
           break;
+
         case 3:
           // Warp
+
           curDelay = lastDelay + (delay - lastDelay) * ((double)s / (double)nFrames);
-          curDelay = curDelay / 1000.0 * GetSampleRate();
+          curDelay = curDelay / 1000.0 * GetSampleRate(); // amount controls
+
           if (lookahead) curPos = (delayRef + s - maxDelay + maxBuffSize) % maxBuffSize;
           else curPos = (delayRef + s) % maxBuffSize;
           
-          if(lookahead) value = inputs[c + 2][s];
-          else if (zeroTrunc) {
-            if (inputs[c + 2][s] > 0.0) {
-              if (absolute) value = -1.0 * inputs[c + 2][s];
-              else value = 0.0;
-            }
-            else value = inputs[c + 2][s];
-          }
-          else {
-            value = inputs[c + 2][s] - 1.0;
-          }
-          
-          if (delay < epsilon) {
-            outputs[c][s] = inputs[c][curPos];
-          }
-          else {
-            sampleOffset = (double)curPos + curDelay * value;
-            if (sampleOffset < 0) sampleOffset += maxBuffSize;
-            else if (sampleOffset >= maxBuffSize) sampleOffset -= maxBuffSize;
 
-            dprev = ((int)sampleOffset);
-            dnext = ((int)(sampleOffset + 1.0));
-            factprev = sampleOffset - (double)dprev;
-            factnext = (double)dnext - sampleOffset;
-            dprev %= maxBuffSize;
-            dnext %= maxBuffSize;
-            outputs[c][s] = factprev * delay_buffer[c][dprev] + factnext * delay_buffer[c][dnext];
+          if (inDerAvg[c] < epsilon) { // if signal is flat amout goes to zero
+            if (inDerAvg[c + 2] < epsilon)
+              noAmount = true;
+            else noAmount = false;
           }
+          else noAmount = false;
 
-          // Changing delay value while playing may cause errors, hack to avoid so
-          // if (outputs[c][s] * outputs[c][s] >= 1.0) outputs[c][s] = 0.0;
+         // if (noAmount) amount = 0.0;
+
+           sampleOffset = (double)curPos + curDelay * value * amount;
+           if (sampleOffset < 0) sampleOffset += maxBuffSize;
+           else if (sampleOffset >= maxBuffSize) sampleOffset -= maxBuffSize;
+
+           dprev = ((int)sampleOffset);
+           dnext = dprev + 1;
+           factnext = sampleOffset - (double)dprev;
+           factprev = 1.0 - factnext;
+           dprev %= maxBuffSize;
+           dnext %= maxBuffSize;
+           outputs[c][s] = factprev * delay_buffer[c][dprev] + factnext * delay_buffer[c][dnext];
+
           break;
+
         case 4:
           // Follow selected signal unless it is crossed by the other signal
+          // amount not applicable
           if ((inputs[c][s] - inputs[c + 2][s]) * (inputs[c][s] - inputs[c + 2][s]) < epsilon) { // signal crossing
             if (smooth == 3) selectedChan[c] = (selectedChan[c] + 1) % 2;
             else {
@@ -286,6 +339,7 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
           else
             outputs[c][s] = inputs[c + 2][s];
           break;
+
         default:
           outputs[c][s] = inputs[c][s];
           break;
@@ -297,6 +351,9 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
 
   for (int c = 0; c < nChans; c++) {
     last[c] = inputs[c][nFrames - 1];
+  }
+  for (int c = 0; c < 2; c++) {
+    lastoutput[c] = outputs[c][nFrames - 1];
   }
 
   delayRef = (delayRef + nFrames) % maxBuffSize;
