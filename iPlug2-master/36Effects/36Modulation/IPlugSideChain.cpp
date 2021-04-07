@@ -173,15 +173,11 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
   static double inDerAvg[4] = { 0.0, 0.0, 0.0, 0.0 }; // derivative avg of input
   const double derCoef = 0.9;
 
-  static bool hasLatency = true, latencySetted = false;
+  static bool hasLatency = true;
+  static bool latencySetted = false;
 
 
   if (sidechained && type == 3) { // copy buffer for warp algo
-    for (int s = 0; s < nFrames; s++) 
-      for (int c = 0; c < 4; c++) {
-        delay_buffer[c][(s + delayRef) % maxBuffSize] = inputs[c][s];
-      }
-
     if (lookahead) {
       if (!hasLatency || !latencySetted) {
         SetLatency(maxDelay);
@@ -269,6 +265,10 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
 
         case 3:
           // Warp
+
+
+          delay_buffer[c][(s + delayRef) % maxBuffSize] = inputs[c][s];
+          delay_buffer[c + 2][(s + delayRef) % maxBuffSize] = inputs[c + 2][s];
 
           curDelay = lastDelay + (delay - lastDelay) * ((double)s / (double)nFrames);
           curDelay = curDelay / 1000.0 * GetSampleRate(); // amount controls
