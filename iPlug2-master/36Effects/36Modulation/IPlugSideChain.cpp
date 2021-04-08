@@ -177,7 +177,7 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
 
   if (sidechained && type == 3) { // copy buffer for warp algo
     for (int s = 0; s < nFrames; s++) 
-      for (int c = 0; c < 2; c++) 
+      for (int c = 0; c < nChans; c++) 
         delay_buffer[c][(s + delayRef) % maxBuffSize] = inputs[c][s];
 
     if (lookahead) {
@@ -229,7 +229,7 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
         if (sideDb[c] >= 1.0) sideDb[c] = 1.0;
         else if (sideDb[c] < epsilon) sideDb[c] = 0.0;
 
-        amount = sideDb[c]* baseAmount;
+        amount = sideDb[c] * baseAmount;
 
         switch (type) {
         case 0:
@@ -262,14 +262,18 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
 
         case 3:
           // Warp
-
           curDelay = lastDelay + (delay - lastDelay) * ((double)s / (double)nFrames);
           curDelay = curDelay / 1000.0 * GetSampleRate(); // amount controls
 
           if (lookahead) curPos = (delayRef + s - maxDelay + maxBuffSize) % maxBuffSize;
           else curPos = (delayRef + s) % maxBuffSize;
+
+          if (!lookahead) {
+            if (absolute) value *= - 1.0;
+            else value -= 1.0;
+          }
           
-           sampleOffset = (double)curPos + curDelay * delay_buffer[c + 2][curPos] * amount;
+           sampleOffset = double(curPos + maxBuffSize) + curDelay * value * amount;
 
            dprev = ((int)sampleOffset);
            dnext = dprev + 1;
