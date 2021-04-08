@@ -2,8 +2,19 @@
 #include "IPlug_include_in_plug_src.h"
 
 IPlugSideChain::IPlugSideChain(const InstanceInfo& info)
-: Plugin(info, MakeConfig(kNumParams, kNumPresets))
+: Plugin(info, MakeConfig(kNumParams, kNumPresets)), 
+lastDelay(0.0),
+delayRef(0),
+noAmount(false),
+hasLatency(false)
 {
+  memset(selectedChan, 0, sizeof(selectedChan));
+  memset(der, 0.0, sizeof(der));
+  memset(last, 0.0, sizeof(last));
+  memset(lastoutput, 0.0, sizeof(lastoutput));
+  memset(sideDb, 0.0, sizeof(sideDb));
+  memset(inDerAvg, 0.0, sizeof(inDerAvg));
+
   GetParam(kModulType)->InitEnum("Type", 0, 5, "", IParam::kFlagsNone, "", "Mult", "Env", "Divide", "Warp", "Switch");
   GetParam(kIsSidechained)->InitEnum("Sidechained", 0, 2, "", IParam::kFlagsNone, "", "Nop", "Yes");
 
@@ -141,10 +152,6 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
   const int type = GetParam(kModulType)->Value();
   const int sidechained = GetParam(kIsSidechained)->Value();
   const double divide = GetParam(kDivide)->Value();
-  static int selectedChan[2] = { 0, 0 };
-  static double der[4] = { 0.0, 0.0, 0.0, 0.0 };
-  static double last[4] = { 0.0, 0.0, 0.0, 0.0 };
-  static double lastoutput[2] = { 0.0, 0.0 };
 
   const double epsilon = 0.0000001;
   const int smooth = GetParam(kSmooth)->Value();
@@ -153,49 +160,39 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
   const bool follow = GetParam(kDivideFollow)->Value();
   const bool zeroTrunc = GetParam(kZeroTrunc)->Value();
 
-  const int maxDelay = double(0.05 * GetSampleRate());
+  const int maxDelay = 0.05 * GetSampleRate();
   const bool lookahead = GetParam(kLookahead)->Value();
   const double delay = GetParam(kDelay)->Value();
-  static double lastDelay = 0.0; //used to smooth delay changes
   double curDelay = 0.0;
   double sampleDelay = delay / 1000. * GetSampleRate();
   double sampleOffset = 0.0; // Absolute position with warped modulation
-  static int delayRef = 0; // Ref of start point for copying new buffer
   int curPos = 0, dprev, dnext; // Used for current, prev and next pos in buffer
   double factprev, factnext;
 
   const double baseAmount = GetParam(kAmount)->Value();
   double amount = baseAmount;
   const double fromDb = GetParam(kFromDB)->Value();
-  static double sideDb[2] = { 0.0, 0.0 }; // measure of sidechain volume
-  static bool noAmount = false;
 
-  static double inDerAvg[4] = { 0.0, 0.0, 0.0, 0.0 }; // derivative avg of input
   const double derCoef = 0.9;
 
-  static bool hasLatency = true;
-  static bool latencySetted = false;
-
-
   if (sidechained && type == 3) { // copy buffer for warp algo
+    for (int s = 0; s < nFrames; s++) 
+      for (int c = 0; c < 2; c++) 
+        delay_buffer[c][(s + delayRef) % maxBuffSize] = inputs[c][s];
+
     if (lookahead) {
-      if (!hasLatency || !latencySetted) {
+      if (!hasLatency) {
         SetLatency(maxDelay);
         hasLatency = true;
-        latencySetted = true;
       }
     }
-    else {
-      if (hasLatency || !latencySetted) {
+    else if (hasLatency) {
         SetLatency(0);
         hasLatency = false;
-        latencySetted = true;
-      }
     }
-  } else if (hasLatency || !latencySetted) {
+  } else if (hasLatency) {
     SetLatency(0);
     hasLatency = false;
-    latencySetted = true;
   }
 
   double divOffset = 1.0;
@@ -266,29 +263,13 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
         case 3:
           // Warp
 
-
-          delay_buffer[c][(s + delayRef) % maxBuffSize] = inputs[c][s];
-          delay_buffer[c + 2][(s + delayRef) % maxBuffSize] = inputs[c + 2][s];
-
           curDelay = lastDelay + (delay - lastDelay) * ((double)s / (double)nFrames);
           curDelay = curDelay / 1000.0 * GetSampleRate(); // amount controls
 
           if (lookahead) curPos = (delayRef + s - maxDelay + maxBuffSize) % maxBuffSize;
           else curPos = (delayRef + s) % maxBuffSize;
           
-
-          if (inDerAvg[c] < epsilon) { // if signal is flat amout goes to zero
-            if (inDerAvg[c + 2] < epsilon)
-              noAmount = true;
-            else noAmount = false;
-          }
-          else noAmount = false;
-
-         // if (noAmount) amount = 0.0;
-
-           sampleOffset = (double)curPos + curDelay * value * amount;
-           if (sampleOffset < 0) sampleOffset += maxBuffSize;
-           else if (sampleOffset >= maxBuffSize) sampleOffset -= maxBuffSize;
+           sampleOffset = (double)curPos + curDelay * delay_buffer[c + 2][curPos] * amount;
 
            dprev = ((int)sampleOffset);
            dnext = dprev + 1;
