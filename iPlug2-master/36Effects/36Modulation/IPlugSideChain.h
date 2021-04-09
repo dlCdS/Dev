@@ -10,6 +10,7 @@ const int maxBuffSize = 14000;
 enum EParams
 {
   kModulType = 0,
+  kInputGain,
   kAmount,
   kFromDB,
   kIsSidechained,
@@ -19,12 +20,12 @@ enum EParams
   kAbsolute,
   kDelay,
   kLookahead,
-  kZeroTrunc,
   kNumParams
 };
 
 enum ECtrlTags
 {
+  kCtrlTagMeter = 0,
   kNumCtrlTags
 };
 
@@ -46,6 +47,8 @@ public:
   
   void GetBusName(ERoute direction, int busIdx, int nBuses, WDL_String& str) const override;
 
+  void OnIdle() override;
+
 private:
   bool mInputChansConnected[4] = {};
   bool mOutputChansConnected[2] = {};
@@ -64,4 +67,5 @@ private:
   double inDerAvg[4]; // derivative avg of input
   bool hasLatency;
 
+  IPeakSender<2> mInputPeakSender;
 };

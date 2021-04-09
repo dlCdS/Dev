@@ -15,6 +15,8 @@ hasLatency(false)
   memset(sideDb, 0.0, sizeof(sideDb));
   memset(inDerAvg, 0.0, sizeof(inDerAvg));
 
+  GetParam(kInputGain)->InitDouble("Side Gain", 1.0, .0, 40., 0.01);
+
   GetParam(kModulType)->InitEnum("Type", 0, 5, "", IParam::kFlagsNone, "", "Mult", "Env", "Divide", "Warp", "Switch");
   GetParam(kIsSidechained)->InitEnum("Sidechained", 0, 2, "", IParam::kFlagsNone, "", "Nop", "Yes");
 
@@ -26,12 +28,8 @@ hasLatency(false)
 
   GetParam(kSmooth)->InitEnum("Style", 0, 4, "", IParam::kFlagsNone, "", "Hard", "Soft", "Clic", "Always");
 
-  
-
   GetParam(kDelay)->InitDouble("Delay", 0.0, 0.0, 50., 0.01, "ms");
   GetParam(kLookahead)->InitEnum("Lookahead", 0, 2, "", IParam::kFlagsNone, "", "Nop", "Yes");
-  GetParam(kZeroTrunc)->InitEnum("ZeroTrunc", 0, 2, "", IParam::kFlagsNone, "", "Nop", "Yes");
-  
   
   GetParam(kAbsolute)->InitEnum("Absolute", 0, 2, "", IParam::kFlagsNone, "", "Nop", "Yes");
 
@@ -74,7 +72,7 @@ hasLatency(false)
     const IText forkAwesomeText{ 20.f, "ForkAwesome" };
 
     const int nRows = 2;
-    const int nCols = 5;
+    const int nCols = 6;
 
     int cellIdx = -1;
 
@@ -86,40 +84,38 @@ hasLatency(false)
       return b.GetGridCell(r * nCols + c, nRows, nCols).GetPadded(-5.);
     };
 
+    pGraphics->AttachControl(new IVLEDMeterControl<2>(cell(1, 0).GetMidVPadded(buttonSize), kCtrlTagMeter));
+
     pGraphics->AttachControl(new IVKnobControl(cell(0, 0).GetMidVPadded(buttonSize),
+      kInputGain, "Side Gain", style, false), kNoTag, "vcontrols");
+
+    pGraphics->AttachControl(new IVKnobControl(cell(0, nCols - 5).GetMidVPadded(buttonSize),
       kAmount, "Amount", style, false), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVKnobControl(cell(0, 1).GetMidVPadded(buttonSize),
+    pGraphics->AttachControl(new IVKnobControl(cell(0, nCols - 4).GetMidVPadded(buttonSize),
       kFromDB, "From DB", style, false), kNoTag, "vcontrols");
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 0).GetMidVPadded(buttonSize), kIsSidechained, "Sidechained", style, true), kNoTag, "vcontrols");
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 1).GetMidVPadded(buttonSize), kAbsolute, "Absolute", style, true),
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, nCols - 5).GetMidVPadded(buttonSize), kIsSidechained, "Sidechained", style, true), kNoTag, "vcontrols");
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, nCols - 4).GetMidVPadded(buttonSize), kAbsolute, "Absolute", style, true),
       kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() > 3));
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 2).Union(cell(1, 4)).GetMidVPadded(buttonSize), 
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, nCols - 3).Union(cell(1, nCols - 1)).GetMidVPadded(buttonSize),
       kSmooth, "Style", style, true), kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() < 4));
 
-    pGraphics->AttachControl(new IVKnobControl(cell(1, 2).GetMidVPadded(buttonSize),
+    pGraphics->AttachControl(new IVKnobControl(cell(1, nCols - 3).GetMidVPadded(buttonSize),
       kDivide, "Divide", style, false), kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() != 2));
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 3).GetMidVPadded(buttonSize),
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, nCols - 2).GetMidVPadded(buttonSize),
       kDivideFollow, "Normalize", style, false), kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() != 2));
 
 
-    pGraphics->AttachControl(new IVKnobControl(cell(1, 2).GetMidVPadded(buttonSize),
+    pGraphics->AttachControl(new IVKnobControl(cell(1, nCols - 3).GetMidVPadded(buttonSize),
       kDelay, "Delay", style, false), kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() != 3));
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 3).GetMidVPadded(buttonSize),
-      kLookahead, "Lookahead", style, false), kNoTag, "vcontrols")->SetAnimationEndActionFunction([pGraphics](IControl* pControl) {
-        bool sync = (pControl->GetValue() > 0.5);
-        pGraphics->HideControl(kZeroTrunc, sync);
-        })->Hide((GetParam(kModulType)->Value() != 3));
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, nCols - 2).GetMidVPadded(buttonSize),
+      kLookahead, "Lookahead", style, false), kNoTag, "vcontrols")->Hide((GetParam(kModulType)->Value() != 3));
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(1, 4).GetMidVPadded(buttonSize),
-      kZeroTrunc, "Zero Trunc", style, false), kNoTag,
-      "vcontrols")->Hide((GetParam(kModulType)->Value() != 3));
-    
 
-    pGraphics->AttachControl(new IVSlideSwitchControl(cell(0, 2).Union(cell(0, 4)).GetMidVPadded(buttonSize), kModulType,
+    pGraphics->AttachControl(new IVSlideSwitchControl(cell(0, nCols - 3).Union(cell(0, nCols - 1)).GetMidVPadded(buttonSize), kModulType,
       "Modulation Type", style, true), kNoTag, "vcontrols")->SetAnimationEndActionFunction([pGraphics](IControl* pControl) {
       bool sync = (pControl->GetValue() <= 0.4 || pControl->GetValue() > 0.6);
       bool sync2 = (pControl->GetValue() < 0.9);
@@ -130,7 +126,6 @@ hasLatency(false)
       pGraphics->HideControl(kSmooth, sync2);
       pGraphics->HideControl(kDelay, sync3);
       pGraphics->HideControl(kLookahead, sync3);
-      pGraphics->HideControl(kZeroTrunc, sync3);
       pGraphics->HideControl(kAbsolute, sync4);
       });
 
@@ -146,6 +141,11 @@ void IPlugSideChain::GetBusName(ERoute direction, int busIdx, int nBuses, WDL_St
   IPlugProcessor::GetBusName(direction, busIdx, nBuses, str);
 }
 
+void IPlugSideChain::OnIdle()
+{
+  mInputPeakSender.TransmitData(*this);
+}
+
 void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 {
   const int nChans = NOutChansConnected();
@@ -158,7 +158,6 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
   bool chanChange(false);
   const bool absolute = GetParam(kAbsolute)->Value();
   const bool follow = GetParam(kDivideFollow)->Value();
-  const bool zeroTrunc = GetParam(kZeroTrunc)->Value();
 
   const int maxDelay = 0.05 * GetSampleRate();
   const bool lookahead = GetParam(kLookahead)->Value();
@@ -174,6 +173,13 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
   const double fromDb = GetParam(kFromDB)->Value();
 
   const double derCoef = 0.9;
+  const double sideGain = GetParam(kInputGain)->Value();
+
+  for (int s = 0; s < nFrames; s++)
+    for (int c = 0; c < 4; c++)
+      inputs[c][s] *= sideGain;
+
+  mInputPeakSender.ProcessBlock(inputs, nFrames, kCtrlTagMeter, 2, 0);
 
   if (sidechained && type == 3) { // copy buffer for warp algo
     for (int s = 0; s < nFrames; s++) 
@@ -223,6 +229,9 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
         if (absolute)
           value = abs(inputs[c + 2][s]);
         else value = inputs[c + 2][s];
+
+        if (value > 1.0) value = 1.0;
+        else if (value < -1.0) value = -1.0;
 
         sideDb[c] = (1.0 - fromDb) * sideDb[c] + abs(inputs[c + 2][s]);
 
