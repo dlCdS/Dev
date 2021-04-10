@@ -46,6 +46,7 @@ public:
   void ProcessBlock(sample** inputs, sample** outputs, int nFrames) override;
   
   void GetBusName(ERoute direction, int busIdx, int nBuses, WDL_String& str) const override;
+  void OnActivate(bool enable) override;
 
   void OnIdle() override;
 
@@ -55,6 +56,7 @@ private:
   bool mSendUpdate = false;
 
   sample delay_buffer[4][maxBuffSize];
+  sample input_buffer[2][2048];
 
   int selectedChan[2];
   double der[4];
@@ -67,5 +69,6 @@ private:
   double inDerAvg[4]; // derivative avg of input
   bool hasLatency;
 
-  IPeakSender<2> mInputPeakSender;
+  IPeakSender<4> mInputPeakSender;
+  IVMeterControl<4>* mInputMeter = nullptr;
 };

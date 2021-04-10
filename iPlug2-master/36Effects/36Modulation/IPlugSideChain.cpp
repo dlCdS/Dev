@@ -8,13 +8,15 @@ delayRef(0),
 noAmount(false),
 hasLatency(false)
 {
+
   memset(selectedChan, 0, sizeof(selectedChan));
   memset(der, 0.0, sizeof(der));
   memset(last, 0.0, sizeof(last));
   memset(lastoutput, 0.0, sizeof(lastoutput));
   memset(sideDb, 0.0, sizeof(sideDb));
   memset(inDerAvg, 0.0, sizeof(inDerAvg));
-
+  
+  
   GetParam(kInputGain)->InitDouble("Side Gain", 1.0, .0, 40., 0.01);
 
   GetParam(kModulType)->InitEnum("Type", 0, 5, "", IParam::kFlagsNone, "", "Mult", "Env", "Divide", "Warp", "Switch");
@@ -84,7 +86,7 @@ hasLatency(false)
       return b.GetGridCell(r * nCols + c, nRows, nCols).GetPadded(-5.);
     };
 
-    pGraphics->AttachControl(new IVLEDMeterControl<2>(cell(1, 0).GetMidVPadded(buttonSize), kCtrlTagMeter));
+    pGraphics->AttachControl(mInputMeter = new IVMeterControl<4>(cell(1, 0).GetMidVPadded(buttonSize), "Inputs", style), kCtrlTagMeter);
 
     pGraphics->AttachControl(new IVKnobControl(cell(0, 0).GetMidVPadded(buttonSize),
       kInputGain, "Side Gain", style, false), kNoTag, "vcontrols");
@@ -144,6 +146,25 @@ void IPlugSideChain::GetBusName(ERoute direction, int busIdx, int nBuses, WDL_St
 void IPlugSideChain::OnIdle()
 {
   mInputPeakSender.TransmitData(*this);
+
+  if (mSendUpdate)
+  {
+    if (GetUI())
+    {
+      mInputMeter->SetTrackName(0, mInputChansConnected[0] ? "Main L (Connected)" : "Main L (Not connected)");
+      mInputMeter->SetTrackName(1, mInputChansConnected[1] ? "Main R (Connected)" : "Main R (Not connected)");
+      mInputMeter->SetTrackName(2, mInputChansConnected[2] ? "SideChain L (Connected)" : "SideChain L (Not connected)");
+      mInputMeter->SetTrackName(3, mInputChansConnected[3] ? "SideChain R (Connected)" : "SideChain R (Not connected)");
+
+      GetUI()->SetAllControlsDirty();
+    }
+    mSendUpdate = false;
+  }
+}
+
+void IPlugSideChain::OnActivate(bool enable)
+{
+  mSendUpdate = true;
 }
 
 void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
@@ -175,31 +196,6 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
   const double derCoef = 0.9;
   const double sideGain = GetParam(kInputGain)->Value();
 
-  for (int s = 0; s < nFrames; s++)
-    for (int c = 0; c < 4; c++)
-      inputs[c][s] *= sideGain;
-
-  mInputPeakSender.ProcessBlock(inputs, nFrames, kCtrlTagMeter, 2, 0);
-
-  if (sidechained && type == 3) { // copy buffer for warp algo
-    for (int s = 0; s < nFrames; s++) 
-      for (int c = 0; c < nChans; c++) 
-        delay_buffer[c][(s + delayRef) % maxBuffSize] = inputs[c][s];
-
-    if (lookahead) {
-      if (!hasLatency) {
-        SetLatency(maxDelay);
-        hasLatency = true;
-      }
-    }
-    else if (hasLatency) {
-        SetLatency(0);
-        hasLatency = false;
-    }
-  } else if (hasLatency) {
-    SetLatency(0);
-    hasLatency = false;
-  }
 
   double divOffset = 1.0;
   if (follow)
@@ -214,6 +210,8 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
       mSendUpdate = true;
     }
   }
+
+  mInputPeakSender.ProcessBlock(inputs, std::min(nFrames, 2048), kCtrlTagMeter, 4, 0);
   
   for (int i=0; i < 2; i++) {
     bool connected = IsChannelConnected(ERoute::kOutput, i);
@@ -222,18 +220,56 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
       mSendUpdate = true;
     }
   }
+
+  if (sidechained && type == 3) { // copy buffer for warp algo
+    for (int c = 0; c < 2; c++) {
+      for (int s = 0; s < nFrames; s++)
+        delay_buffer[c][(s + delayRef) % maxBuffSize] = inputs[c][s];
+    }
+    for (int c = 2; c < 4; c++) {
+      if(mInputChansConnected[c])
+      for (int s = 0; s < nFrames; s++)
+        delay_buffer[c][(s + delayRef) % maxBuffSize] = sideGain * inputs[c][s];
+    }
+
+    if (lookahead) {
+      if (!hasLatency) {
+        SetLatency(maxDelay);
+        hasLatency = true;
+      }
+    }
+    else if (hasLatency) {
+      SetLatency(0);
+      hasLatency = false;
+    }
+  }
+  else if (hasLatency) {
+    SetLatency(0);
+    hasLatency = false;
+  }
   
   for (int s = 0; s < nFrames; s++) {
     for (int c = 0; c < 2; c++) {
       if (mInputChansConnected[c + 2] && sidechained) {
-        if (absolute)
-          value = abs(inputs[c + 2][s]);
-        else value = inputs[c + 2][s];
+
+        if (lookahead) curPos = (delayRef + s - maxDelay + maxBuffSize) % maxBuffSize;
+        else curPos = (delayRef + s) % maxBuffSize;
+
+        if (type == 3 && lookahead) {
+          if (absolute)
+            value = sideGain * abs(delay_buffer[c + 2][curPos]);
+          else value = sideGain * delay_buffer[c + 2][curPos];
+        }
+        else {
+          if (absolute)
+            value = sideGain * abs(inputs[c + 2][s]);
+          else value = sideGain * inputs[c + 2][s];
+        }
 
         if (value > 1.0) value = 1.0;
         else if (value < -1.0) value = -1.0;
 
-        sideDb[c] = (1.0 - fromDb) * sideDb[c] + abs(inputs[c + 2][s]);
+        sideDb[c] = (1.0 - fromDb) * sideDb[c] + abs(sideGain * inputs[c + 2][s]);
 
         if (sideDb[c] >= 1.0) sideDb[c] = 1.0;
         else if (sideDb[c] < epsilon) sideDb[c] = 0.0;
@@ -274,8 +310,6 @@ void IPlugSideChain::ProcessBlock(sample** inputs, sample** outputs, int nFrames
           curDelay = lastDelay + (delay - lastDelay) * ((double)s / (double)nFrames);
           curDelay = curDelay / 1000.0 * GetSampleRate(); // amount controls
 
-          if (lookahead) curPos = (delayRef + s - maxDelay + maxBuffSize) % maxBuffSize;
-          else curPos = (delayRef + s) % maxBuffSize;
 
           if (!lookahead) {
             if (absolute) value *= - 1.0;
