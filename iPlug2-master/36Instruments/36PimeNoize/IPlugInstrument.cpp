@@ -131,8 +131,18 @@ void IPlugInstrument::ProcessMidiMsg(const IMidiMsg& msg)
   }
   
 handle:
-  mDSP.ProcessMidiMsg(msg);
-  SendMidiMsg(msg);
+  IMidiMsg mymsg;
+  double freq = pow(2.0, (double(msg.NoteNumber()) - 69.0) / 12.0) * 440.0;
+  for (int i = 0; i < sizeof(primeList) / sizeof(double); i++) {
+    double note = 69.0 + 12.0 * log2((primeList[i] * freq / 2.0) / 440.0);
+    mymsg = msg;
+    mymsg.MakeControlChangeMsg(iplug::IMidiMsg::EControlChangeMsg::kModWheel, note - int(note));
+    mymsg.MakeNoteOnMsg(note, msg.Velocity(), 0);
+    //mymsg.MakePitchWheelMsg(note - int(note));
+    
+    mDSP.ProcessMidiMsg(mymsg);
+    SendMidiMsg(mymsg);
+  }
 }
 
 void IPlugInstrument::OnParamChange(int paramIdx)
