@@ -2,6 +2,7 @@
 
 #include "IPlug_include_in_plug_hdr.h"
 #include "IControls.h"
+#include <fstream>
 
 const int kNumPresets = 1;
 
@@ -39,6 +40,26 @@ const double primeList[] ={
 1987, 1993, 1997, 1999
 };
 
+const int primeListSize = sizeof(primeList) / sizeof(double);
+
+
+namespace Shapes {
+  const int nSample = 9600;
+  double sine[primeListSize][nSample];
+  double triangle[primeListSize][nSample];
+  double square[primeListSize][nSample];
+  double sawup[primeListSize][nSample];
+  double sawdown[primeListSize][nSample];
+
+  inline void init() {
+    // sine
+    for (int i = 0; i < primeListSize; i++) {
+      for (int j = 0; j < nSample; j++) {
+        sine[i][j] = sin(primeList[i] * 2.0 * M_PI * double(j) / double(nSample));
+      }
+    }
+  }
+};
 
 enum EParams
 {
@@ -93,5 +114,6 @@ private:
   IPlugInstrumentDSP<sample> mDSP {16};
   IPeakSender<2> mMeterSender;
   ISender<1> mLFOVisSender;
+
 #endif
 };

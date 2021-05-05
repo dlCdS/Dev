@@ -5,6 +5,8 @@
 IPlugInstrument::IPlugInstrument(const InstanceInfo& info)
 : Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
+  Shapes::init();
+
   GetParam(kParamGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
   GetParam(kParamNoteGlideTime)->InitMilliseconds("Note Glide Time", 0., 0.0, 30.);
   GetParam(kParamAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
@@ -160,4 +162,5 @@ bool IPlugInstrument::OnMessage(int msgTag, int ctrlTag, int dataSize, const voi
   
   return false;
 }
+
 #endif

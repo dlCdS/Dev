@@ -265,6 +265,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="../config.h" />
+    <ClInclude Include="..\..\..\36Common\ShapeGenerator.h" />
     <ClInclude Include="..\..\..\Dependencies\IPlug\RTAudio\include\asio.h" />
     <ClInclude Include="..\..\..\Dependencies\IPlug\RTAudio\include\asiodrivers.h" />
     <ClInclude Include="..\..\..\Dependencies\IPlug\RTAudio\include\asiodrvr.h" />
@@ -332,6 +333,7 @@
     <ClInclude Include="..\resources\resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\36Common\ShapeGenerator.cpp" />
     <ClCompile Include="..\..\..\Dependencies\IPlug\RTAudio\include\asio.cpp" />
     <ClCompile Include="..\..\..\Dependencies\IPlug\RTAudio\include\asiodrivers.cpp" />
     <ClCompile Include="..\..\..\Dependencies\IPlug\RTAudio\include\asiolist.cpp" />
