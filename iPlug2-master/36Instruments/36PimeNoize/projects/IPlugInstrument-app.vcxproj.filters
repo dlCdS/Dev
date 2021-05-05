@@ -83,7 +83,7 @@
     <ClCompile Include="..\..\..\IGraphics\Drawing\IGraphicsSkia.cpp">
       <Filter>IGraphics\Drawing</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\36Common\ShapeGenerator.cpp" />
+    <ClCompile Include="..\..\..\36Common\VirtualShapeGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\IPlugInstrument.h" />
@@ -278,7 +278,7 @@
       <Filter>IGraphics</Filter>
     </ClInclude>
     <ClInclude Include="..\IPlugInstrument_DSP.h" />
-    <ClInclude Include="..\..\..\36Common\ShapeGenerator.h" />
+    <ClInclude Include="..\..\..\36Common\VirtualShapeGenerator.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">

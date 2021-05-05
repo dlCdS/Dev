@@ -140,7 +140,7 @@ handle:
     mymsg = msg;
     mymsg.MakeControlChangeMsg(iplug::IMidiMsg::EControlChangeMsg::kModWheel, note - int(note));
     mymsg.MakeNoteOnMsg(note, msg.Velocity(), 0);
-    //mymsg.MakePitchWheelMsg(note - int(note));
+    mymsg.MakePitchWheelMsg(note - int(note));
     
     mDSP.ProcessMidiMsg(mymsg);
     SendMidiMsg(mymsg);
