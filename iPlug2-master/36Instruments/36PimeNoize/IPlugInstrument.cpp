@@ -5,14 +5,15 @@
 IPlugInstrument::IPlugInstrument(const InstanceInfo& info)
 : Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
-  Shapes::init();
 
   GetParam(kParamGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
-  GetParam(kParamNoteGlideTime)->InitMilliseconds("Note Glide Time", 0., 0.0, 30.);
-  GetParam(kParamAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
-  GetParam(kParamDecay)->InitDouble("Decay", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
+  GetParam(kParamNoteGlideTime)->InitDouble("Glide Time", 0., 0.0, 10000., 1., "ms");
+  GetParam(kParamDoGlide)->InitBool("Glide", true);
+  GetParam(kParamVoices)->InitInt("Voices", 8, 1, 32);
+  GetParam(kParamAttack)->InitDouble("Attack", 10., 1., 10000., 1., "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
+  GetParam(kParamDecay)->InitDouble("Decay", 10., 1., 10000., 1., "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
   GetParam(kParamSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
-  GetParam(kParamRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
+  GetParam(kParamRelease)->InitDouble("Release", 10., 2., 10000., 1., "ms", IParam::kFlagsNone, "ADSR");
   GetParam(kParamLFOShape)->InitEnum("LFO Shape", LFO<>::kTriangle, {LFO_SHAPE_VALIST});
   GetParam(kParamLFORateHz)->InitFrequency("LFO Rate", 1., 0.01, 40.);
   GetParam(kParamLFORateTempo)->InitEnum("LFO Rate", LFO<>::k1, {LFO_TEMPODIV_VALIST});
@@ -46,7 +47,10 @@ IPlugInstrument::IPlugInstrument(const InstanceInfo& info)
 //    pGraphics->AttachControl(new IVMultiSliderControl<4>(b.GetGridCell(0, 2, 2).GetPadded(-30), "", DEFAULT_STYLE, kParamAttack, EDirection::Vertical, 0.f, 1.f));
     const IRECT controls = b.GetGridCell(1, 2, 2);
     pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(0, 2, 6).GetCentredInside(90), kParamGain, "Gain"));
-    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(1, 2, 6).GetCentredInside(90), kParamNoteGlideTime, "Glide"));
+    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(1, 2, 6).GetCentredInside(90), kParamVoices, "Voices"));
+    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(6, 2, 6).GetCentredInside(90), kParamNoteGlideTime, "Glide Time"));
+    pGraphics->AttachControl(new IVSlideSwitchControl(controls.GetGridCell(7, 2, 6).GetCentredInside(90), kParamDoGlide, "Glide", DEFAULT_STYLE.WithShowValue(false).WithShowLabel(false).WithWidgetFrac(0.5f).WithDrawShadows(false), false), kNoTag, "LFO");
+
     const IRECT sliders = controls.GetGridCell(2, 2, 6).Union(controls.GetGridCell(3, 2, 6)).Union(controls.GetGridCell(4, 2, 6));
     pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(0, 1, 4).GetMidHPadded(30.), kParamAttack, "Attack"));
     pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(1, 1, 4).GetMidHPadded(30.), kParamDecay, "Decay"));
@@ -94,9 +98,8 @@ IPlugInstrument::IPlugInstrument(const InstanceInfo& info)
 #if IPLUG_DSP
 void IPlugInstrument::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 {
-  mDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
+  sineshape.ProcessBlock(outputs, 2, nFrames);
   mMeterSender.ProcessBlock(outputs, nFrames, kCtrlTagMeter);
-  mLFOVisSender.PushData({kCtrlTagLFOVis, {float(mDSP.mLFO.GetLastOutput())}});
 }
 
 void IPlugInstrument::OnIdle()
@@ -107,7 +110,7 @@ void IPlugInstrument::OnIdle()
 
 void IPlugInstrument::OnReset()
 {
-  mDSP.Reset(GetSampleRate(), GetBlockSize());
+  sineshape.Reset(GetSampleRate());
 }
 
 void IPlugInstrument::ProcessMidiMsg(const IMidiMsg& msg)
@@ -133,23 +136,53 @@ void IPlugInstrument::ProcessMidiMsg(const IMidiMsg& msg)
   }
   
 handle:
-  IMidiMsg mymsg;
-  double freq = pow(2.0, (double(msg.NoteNumber()) - 69.0) / 12.0) * 440.0;
-  for (int i = 0; i < sizeof(primeList) / sizeof(double); i++) {
-    double note = 69.0 + 12.0 * log2((primeList[i] * freq / 2.0) / 440.0);
-    mymsg = msg;
-    mymsg.MakeControlChangeMsg(iplug::IMidiMsg::EControlChangeMsg::kModWheel, note - int(note));
-    mymsg.MakeNoteOnMsg(note, msg.Velocity(), 0);
-    mymsg.MakePitchWheelMsg(note - int(note));
-    
-    mDSP.ProcessMidiMsg(mymsg);
-    SendMidiMsg(mymsg);
-  }
+  sineshape.ProcessMidiMsg(msg);
+  
 }
 
 void IPlugInstrument::OnParamChange(int paramIdx)
 {
-  mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
+  /* Recap param
+  kParamGain = 0,
+  kParamNoteGlideTime,
+  kParamDoGlide,
+  kParamVoices,
+  kParamAttack,
+  kParamDecay,
+  kParamSustain,
+  kParamRelease,
+  kParamLFOShape,
+  kParamLFORateHz,
+  kParamLFORateTempo,
+  kParamLFORateMode,
+  kParamLFODepth,
+  kNumParams*/
+  switch (paramIdx) {
+  case kParamGain:
+    sineshape.SetGain(GetParam(paramIdx)->Value()/100.);
+    break;
+  case kParamNoteGlideTime:
+    sineshape.SetGlideTime(GetParam(paramIdx)->Value()/1000.);
+    break;
+  case kParamDoGlide:
+    sineshape.SetGlide(GetParam(paramIdx)->Value());
+    break;
+  case kParamVoices:
+    sineshape.SetVoices(GetParam(paramIdx)->Value());
+    break;
+  case kParamAttack:
+    sineshape.SetAttack(GetParam(paramIdx)->Value() / 1000.);
+    break;
+  case kParamDecay:
+    sineshape.SetDecay(GetParam(paramIdx)->Value() / 1000.);
+    break;
+  case kParamSustain:
+    sineshape.SetSustain(GetParam(paramIdx)->Value()/100.);
+    break;
+  case kParamRelease:
+    sineshape.SetRelease(GetParam(paramIdx)->Value() / 1000.);
+    break;
+  }
 }
 
 bool IPlugInstrument::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData)
@@ -157,7 +190,6 @@ bool IPlugInstrument::OnMessage(int msgTag, int ctrlTag, int dataSize, const voi
   if(ctrlTag == kCtrlTagBender && msgTag == IWheelControl::kMessageTagSetPitchBendRange)
   {
     const int bendRange = *static_cast<const int*>(pData);
-    mDSP.mSynth.SetPitchBendRange(bendRange);
   }
   
   return false;

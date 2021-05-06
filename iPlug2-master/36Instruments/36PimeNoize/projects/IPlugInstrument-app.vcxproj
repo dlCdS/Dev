@@ -331,6 +331,7 @@
     <ClInclude Include="..\IPlugInstrument.h" />
     <ClInclude Include="..\IPlugInstrument_DSP.h" />
     <ClInclude Include="..\resources\resource.h" />
+    <ClInclude Include="SineShape.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\36Common\VirtualShapeGenerator.cpp" />
@@ -376,6 +377,7 @@
     <ClCompile Include="..\..\..\IPlug\IPlugProcessor.cpp" />
     <ClCompile Include="..\..\..\IPlug\IPlugTimer.cpp" />
     <ClCompile Include="..\IPlugInstrument.cpp" />
+    <ClCompile Include="SineShape.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\resources\main.rc" />

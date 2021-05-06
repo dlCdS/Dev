@@ -3,6 +3,7 @@
 #include "IPlug_include_in_plug_hdr.h"
 #include "IControls.h"
 #include <fstream>
+#include "projects/SineShape.h"
 
 const int kNumPresets = 1;
 
@@ -43,7 +44,7 @@ const double primeList[] ={
 const int primeListSize = sizeof(primeList) / sizeof(double);
 
 
-namespace Shapes {
+namespace {
   const int nSample = 9600;
   double sine[primeListSize][nSample];
   double triangle[primeListSize][nSample];
@@ -65,6 +66,8 @@ enum EParams
 {
   kParamGain = 0,
   kParamNoteGlideTime,
+  kParamDoGlide,
+  kParamVoices,
   kParamAttack,
   kParamDecay,
   kParamSustain,
@@ -111,7 +114,7 @@ public:
   bool OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData) override;
 
 private:
-  IPlugInstrumentDSP<sample> mDSP {16};
+  SineShape sineshape;
   IPeakSender<2> mMeterSender;
   ISender<1> mLFOVisSender;
 
