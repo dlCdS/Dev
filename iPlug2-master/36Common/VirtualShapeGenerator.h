@@ -2,21 +2,30 @@
 #include "IPlugMidi.h"
 #include <mutex>
 #include <list>
+#include "Math36.h"
 
 using namespace iplug;
+
+/* Possible improvment:
+* have a pitched attack - done
+* linking modwheels
+* have a filtered attack
+* add lfo gain & lfo pitch
+* ?
+*/
 
 class VirtualShapeGenerator
 {
   struct Note;
   struct SimpleMidi;
 public:
-  VirtualShapeGenerator();    
+  VirtualShapeGenerator();
 
   void ProcessMidiMsg(const IMidiMsg &msg);
   void ProcessBlock(sample** outputs, int nChannel, int nFrames);
 
   void Reset(const double& sampleRate);
-  void SetGlide(const bool& glideValue);
+  void EnableGlide(const bool& enable);
   void SetAttack(const double& attackValue);
   void SetSustain(const double& sustainValue);
   void SetDecay(const double& decayValue);
@@ -24,6 +33,11 @@ public:
   void SetGlideTime(const double& glideTimeValue);
   void SetGain(const double& gainValue);
   void SetVoices(const int& voicesValue);
+  void SetSpread(const double& spreadValue);
+  void EnablePitch(const bool& enable);
+  void SetPitchAttack(const double& pitch);
+  void SetPitchTime(const double& pitchtime);
+  void SetPitchBend(const double& pitchbend);
 
 protected:
   /// <summary>
@@ -34,13 +48,13 @@ protected:
   virtual sample getShape(const double& t) = 0;
 
 private:
-  std::list<int> noteOn, noteOff;
-  bool enableGlide;
-  double attack, sustain, decay, release, glideTime, gain;
-  int voices;
-  double sampleRate, sampleDuration;
+  std::list<int> _noteOn, _noteOff;
+  bool _enableGlide, _enablePitch;
+  double _attack, _sustain, _decay, _release, _glideTime, _gain, _spread, _pitchAttack, _pitchTime, _pitchBend;
+  int _voices;
+  double _sampleRate, _sampleDuration;
 
-  std::mutex noteOnMutex, noteOffMutex;
+  std::mutex _noteOnMutex, _noteOffMutex;
   void startNote(const IMidiMsg& msg);
   void stopNote(const IMidiMsg& msg);
   // static stuff
@@ -56,7 +70,7 @@ private:
 
   // structs
   struct SimpleMidi {
-    int note, pitch;
+    int _note, _pitch;
     void fromDouble(const double& value);
     double toDouble();
     void operator +=(const SimpleMidi& msg);
@@ -66,26 +80,28 @@ private:
   };
 
   struct Note {
-    SimpleMidi current, target;
-    double startNote, endNote;
-    double period;
-    double velocity;
-    double time, glidetime, periodTime, releaseTime;
-    double lastGain;
-    bool glide;
-    bool isPlaying, isStopping;
+    SimpleMidi _current, _target;
+    double _startNote, _endNote;
+    double _period[2];
+    double _velocity;
+    double _time, _glideElapsed, _periodTime[2], _releaseElapsed, _pitchElapsed;
+    double _lastGain;
+    double _spread;
+    bool _glide, _pitch;
+    bool _isPlaying, _isStopping;
     Note();
-    Note(const IMidiMsg& msg);
-    void reset(const IMidiMsg& msg);
+    Note(const IMidiMsg& msg, const double& spreadValue);
+    void reset(const IMidiMsg& msg, const double& spreadValue);
     void start();
     void stop();
-    double normalizedPeriodLocation() const;
+    double normalizedPeriodLocation(const int &channel = 0) const;
     void forceStop();
-    void doGlideFrom(const IMidiMsg& msg);
     void doGlideFrom(const Note& note);
-    void increment(const double& timestep, const double& glideTime);
+    void doPitchAttack(const double &pitch);
+    void increment(const double& timestep, const double& glideTime, const double & pitchTime, const double& spreadValue);
+    bool legato(const double& elapsed, const double& duration);
   };
 
 
-  Note noteTab[128];
+  Note _noteTab[128];
 };

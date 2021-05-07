@@ -265,6 +265,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="../config.h" />
+    <ClInclude Include="..\..\..\36Common\Math36.h" />
     <ClInclude Include="..\..\..\36Common\VirtualShapeGenerator.h" />
     <ClInclude Include="..\..\..\Dependencies\IPlug\RTAudio\include\asio.h" />
     <ClInclude Include="..\..\..\Dependencies\IPlug\RTAudio\include\asiodrivers.h" />
@@ -331,9 +332,10 @@
     <ClInclude Include="..\IPlugInstrument.h" />
     <ClInclude Include="..\IPlugInstrument_DSP.h" />
     <ClInclude Include="..\resources\resource.h" />
-    <ClInclude Include="SineShape.h" />
+    <ClInclude Include="..\SineShape.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\36Common\Math36.cpp" />
     <ClCompile Include="..\..\..\36Common\VirtualShapeGenerator.cpp" />
     <ClCompile Include="..\..\..\Dependencies\IPlug\RTAudio\include\asio.cpp" />
     <ClCompile Include="..\..\..\Dependencies\IPlug\RTAudio\include\asiodrivers.cpp" />
@@ -377,7 +379,7 @@
     <ClCompile Include="..\..\..\IPlug\IPlugProcessor.cpp" />
     <ClCompile Include="..\..\..\IPlug\IPlugTimer.cpp" />
     <ClCompile Include="..\IPlugInstrument.cpp" />
-    <ClCompile Include="SineShape.cpp" />
+    <ClCompile Include="..\SineShape.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\resources\main.rc" />

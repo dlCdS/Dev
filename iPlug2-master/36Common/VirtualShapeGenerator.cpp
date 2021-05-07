@@ -4,7 +4,11 @@ double VirtualShapeGenerator::s_noteToDuration[128][8192] = { 0 };
 bool VirtualShapeGenerator::s_init = false;
 std::mutex VirtualShapeGenerator::s_mutex;
 
-VirtualShapeGenerator::VirtualShapeGenerator() : enableGlide(true), attack(0.5), sustain(1.0), decay(1.05), release(1.05), glideTime(5), voices(2), gain(.2)
+VirtualShapeGenerator::VirtualShapeGenerator() :
+  _enableGlide(true), _enablePitch(true), _attack(0.5),
+_sustain(1.0), _decay(1.05),
+_release(1.05), _glideTime(5), _voices(2), _gain(.2),
+_spread(1.01), _pitchAttack(12.), _pitchTime(.10), _pitchBend(0.0)
 {
   VirtualShapeGenerator::InitStaticStuff();
 }
@@ -38,118 +42,145 @@ void VirtualShapeGenerator::ProcessBlock(sample** outputs, int nChannel,  int nF
   for (int i = 0; i < nFrames; i++) {
     for (int c = 0; c < nChannel; c++) {
       outputs[c][i] = 0;
-      noteOnMutex.lock();
-      for (auto it = noteOn.begin(); it != noteOn.end(); ++it) {
-        time = noteTab[*it].time;
-        if (time < attack) currentgain = (1.0 - (attack - time) / attack);
-        else if (time < attack + decay) currentgain = (sustain + (attack + decay - time) / decay * (1.0 - sustain));
-        else currentgain = sustain;
+      _noteOnMutex.lock();
+      for (auto it = _noteOn.begin(); it != _noteOn.end(); ++it) {
+        time = _noteTab[*it]._time;
+        if (time < _attack) currentgain = (1.0 - (_attack - time) / _attack);
+        else if (time < _attack + _decay) currentgain = (_sustain + (_attack + _decay - time) / _decay * (1.0 - _sustain));
+        else currentgain = _sustain;
 
-        noteTab[*it].lastGain = currentgain;
-        outputs[c][i] += gain * currentgain * getShape(noteTab[*it].normalizedPeriodLocation());
-        noteTab[*it].increment(sampleDuration, glideTime);
+        _noteTab[*it]._lastGain = currentgain;
+        outputs[c][i] += _gain * currentgain * getShape(_noteTab[*it].normalizedPeriodLocation(c));
+        _noteTab[*it].increment(_sampleDuration * _pitchBend, _glideTime, _pitchTime, _spread);
       }
-      noteOnMutex.unlock();
-      noteOffMutex.lock();
-      for (auto it = noteOff.begin(); it != noteOff.end();) {
-        if (noteTab[*it].releaseTime > release) {
-          it = noteOff.erase(it);
+      _noteOnMutex.unlock();
+      _noteOffMutex.lock();
+      for (auto it = _noteOff.begin(); it != _noteOff.end();) {
+        if (_noteTab[*it]._releaseElapsed > _release) {
+          it = _noteOff.erase(it);
         }
         else {
-          currentgain = gain * noteTab[*it].lastGain * (release - noteTab[*it].releaseTime) / release;
-          outputs[c][i] += currentgain * getShape(noteTab[*it].normalizedPeriodLocation());
-          noteTab[*it].increment(sampleDuration, glideTime);
+          currentgain = _gain * _noteTab[*it]._lastGain * (_release - _noteTab[*it]._releaseElapsed) / _release;
+          outputs[c][i] += currentgain * getShape(_noteTab[*it].normalizedPeriodLocation(c));
+          _noteTab[*it].increment(_sampleDuration * _pitchBend , _glideTime, _pitchTime, _spread);
           ++it;
         }
       }
-      noteOffMutex.unlock();
+      _noteOffMutex.unlock();
     }
   }
 }
 
 void VirtualShapeGenerator::Reset(const double& sampleRateValue)
 {
-  sampleRate = sampleRateValue;
-  sampleDuration = 1.0 / sampleRateValue;
+  _sampleRate = sampleRateValue;
+  _sampleDuration = 1.0 / sampleRateValue;
 }
 
-void VirtualShapeGenerator::SetGlide(const bool& glideValue)
+void VirtualShapeGenerator::EnableGlide(const bool& glideValue)
 {
-  enableGlide = glideValue;
+  _enableGlide = glideValue;
 }
 
 void VirtualShapeGenerator::SetAttack(const double& attackValue)
 {
-  attack = attackValue;
+  _attack = attackValue;
 }
 
 void VirtualShapeGenerator::SetSustain(const double& sustainValue)
 {
-  sustain = sustainValue;
+  _sustain = sustainValue;
 }
 
 void VirtualShapeGenerator::SetDecay(const double& decayValue)
 {
-  decay = decayValue;
+  _decay = decayValue;
 }
 
 void VirtualShapeGenerator::SetRelease(const double& releaseValue)
 {
-  release = releaseValue;
+  _release = releaseValue;
 }
 
 void VirtualShapeGenerator::SetGlideTime(const double& glideTimeValue)
 {
-  glideTime = glideTimeValue;
+  _glideTime = glideTimeValue;
 }
 
 void VirtualShapeGenerator::SetGain(const double& gainValue)
 {
-  gain = gainValue;
+  _gain = gainValue;
 }
 
 void VirtualShapeGenerator::SetVoices(const int& voicesValue)
 {
-  voices = voicesValue;
+  _voices = voicesValue;
+}
+
+void VirtualShapeGenerator::SetSpread(const double& spreadValue)
+{
+  _spread = spreadValue;
+}
+
+void VirtualShapeGenerator::EnablePitch(const bool& enable)
+{
+  _enablePitch = enable;
+}
+
+void VirtualShapeGenerator::SetPitchAttack(const double& pitch)
+{
+  _pitchAttack = pitch;
+}
+
+void VirtualShapeGenerator::SetPitchTime(const double& pitchtime)
+{
+  _pitchTime = pitchtime;
+}
+
+void VirtualShapeGenerator::SetPitchBend(const double& pitchbend)
+{
+  _pitchBend = pow(2.0, pitchbend / 12.0);
 }
 
 void VirtualShapeGenerator::startNote(const IMidiMsg& msg)
 {
-  if (!noteTab[msg.NoteNumber()].isPlaying) {
-    noteOnMutex.lock();
-    noteOff.remove(msg.NoteNumber());
-    noteOnMutex.unlock();
-    noteTab[msg.NoteNumber()].reset(msg);
-    if (noteOn.size() >= voices) {
-      if (enableGlide) {
-        noteTab[msg.NoteNumber()].start();
-        noteOnMutex.lock();
-        noteOn.push_back(msg.NoteNumber());
-        noteTab[msg.NoteNumber()].doGlideFrom(noteTab[noteOn.front()]);
-        noteTab[noteOn.front()].forceStop();
-        noteOn.pop_front();
-        noteOnMutex.unlock();
+  if (!_noteTab[msg.NoteNumber()]._isPlaying) {
+    _noteOnMutex.lock();
+    _noteOff.remove(msg.NoteNumber());
+    _noteOnMutex.unlock();
+    _noteTab[msg.NoteNumber()].reset(msg, _spread);
+    if (_noteOn.size() >= _voices) {
+      if (_enableGlide) {
+        _noteTab[msg.NoteNumber()].start();
+        _noteOnMutex.lock();
+        _noteOn.push_back(msg.NoteNumber());
+        _noteTab[msg.NoteNumber()].doGlideFrom(_noteTab[_noteOn.front()]);
+        _noteTab[_noteOn.front()].forceStop();
+        _noteOn.pop_front();
+        _noteOnMutex.unlock();
       }
     }
     else {
-      noteTab[msg.NoteNumber()].start();
-      noteOnMutex.lock();
-      noteOn.push_back(msg.NoteNumber());
-      noteOnMutex.unlock();
+      _noteTab[msg.NoteNumber()].start();
+      _noteOnMutex.lock();
+      _noteOn.push_back(msg.NoteNumber());
+      if (_enablePitch)
+        _noteTab[msg.NoteNumber()].doPitchAttack(_pitchAttack);
+      _noteOnMutex.unlock();
     }
   }
 }
 
 void VirtualShapeGenerator::stopNote(const IMidiMsg& msg)
 {
-  if (noteTab[msg.NoteNumber()].isPlaying) {
-    noteOnMutex.lock();
-    noteOn.remove(msg.NoteNumber());
-    noteOnMutex.unlock();
-    noteOffMutex.lock();
-    noteOff.push_back(msg.NoteNumber());
-    noteOffMutex.unlock();
-    noteTab[msg.NoteNumber()].stop();
+  if (_noteTab[msg.NoteNumber()]._isPlaying) {
+    _noteOnMutex.lock();
+    _noteOn.remove(msg.NoteNumber());
+    _noteOnMutex.unlock();
+    _noteOffMutex.lock();
+    _noteOff.push_back(msg.NoteNumber());
+    _noteOffMutex.unlock();
+    _noteTab[msg.NoteNumber()].stop();
   }
 }
 
@@ -165,7 +196,7 @@ double VirtualShapeGenerator::GetDurationFromNote(const int& note, const int& pi
 
 double VirtualShapeGenerator::GetDurationFromNote(const SimpleMidi& simple)
 {
-  return GetDurationFromNote(simple.note, simple.pitch);
+  return GetDurationFromNote(simple._note, simple._pitch);
 }
 
 void VirtualShapeGenerator::InitStaticStuff()
@@ -182,123 +213,163 @@ void VirtualShapeGenerator::InitStaticStuff()
 
 void VirtualShapeGenerator::SimpleMidi::fromDouble(const double& value)
 {
-  note = int(value); pitch = 8192.0 * (value- int(value));
-  if (note < 0) note = 0;
-  else if (note > 127) note = 127;
+  _note = int(value); _pitch = 8192.0 * (value- int(value));
+  if (_note < 0) _note = 0;
+  else if (_note > 127) _note = 127;
 
-  if (pitch < 0) pitch = 0;
-  else if (pitch > 8191) pitch = 8191;
+  if (_pitch < 0) _pitch = 0;
+  else if (_pitch > 8191) _pitch = 8191;
 }
 
 double VirtualShapeGenerator::SimpleMidi::toDouble()
 {
-  return double(note) + double(pitch) / 8192.0;
+  return double(_note) + double(_pitch) / 8192.0;
 }
 
 void VirtualShapeGenerator::SimpleMidi::operator+=(const SimpleMidi& msg)
 {
-  note += msg.note;
-  pitch += msg.pitch;
+  _note += msg._note;
+  _pitch += msg._pitch;
 }
 
 VirtualShapeGenerator::SimpleMidi::SimpleMidi(const IMidiMsg& msg)
 {
-  note = msg.NoteNumber();
+  _note = msg.NoteNumber();
   if (msg.PitchWheel() < 0) {
-    note--;
-    pitch = (1.0 + msg.PitchWheel()) * 8192;
+    _note--;
+    _pitch = (1.0 + msg.PitchWheel()) * 8192;
   }
   else {
-    pitch = msg.PitchWheel() * 8192;
+    _pitch = msg.PitchWheel() * 8192;
   }
 }
 
-VirtualShapeGenerator::SimpleMidi::SimpleMidi(const SimpleMidi& msg) : pitch(msg.pitch), note(msg.note)
+VirtualShapeGenerator::SimpleMidi::SimpleMidi(const SimpleMidi& msg) : _pitch(msg._pitch), _note(msg._note)
 {
 }
 
-VirtualShapeGenerator::SimpleMidi::SimpleMidi() : note(0), pitch(0) {}
+VirtualShapeGenerator::SimpleMidi::SimpleMidi() : _note(0), _pitch(0) {}
 
-VirtualShapeGenerator::Note::Note() : velocity(1.0), time(0.0), isPlaying(false), isStopping(false),
-periodTime(0.0), glide(false), period(GetDurationFromNote(current)) {}
-
-VirtualShapeGenerator::Note::Note(const IMidiMsg& msg) : velocity(msg.Velocity()), time(0.0), isPlaying(false), isStopping(false),
-periodTime(0.0), glide(false), target(msg) {
-  current = target;
-  period = GetDurationFromNote(current);
+VirtualShapeGenerator::Note::Note() :
+  _velocity(1.0), _time(0.0), _isPlaying(false), _isStopping(false),
+_glide(false), _spread(1.0)
+{
+  _period[0] = GetDurationFromNote(_current) * _spread;
+  _period[1] = GetDurationFromNote(_current) / _spread;
+  _periodTime[0] = 0.0;
+  _periodTime[1] = 0.0;
 }
 
-void VirtualShapeGenerator::Note::reset(const IMidiMsg& msg)
+VirtualShapeGenerator::Note::Note(const IMidiMsg& msg, const double& spreadValue) :
+  _velocity(msg.Velocity()), _time(0.0), _isPlaying(false), _isStopping(false),
+_glide(false), _target(msg), _spread(spreadValue)
 {
-  *this = Note(msg);
-  time = 0.0;
-  periodTime = 0.0;
-  period = GetDurationFromNote(current);
+  _current = _target;
+  _period[0] = GetDurationFromNote(_current) * _spread;
+  _period[1] = GetDurationFromNote(_current) / _spread;
+  _periodTime[0] = 0.0;
+  _periodTime[1] = 0.0;
+}
+
+void VirtualShapeGenerator::Note::reset(const IMidiMsg& msg, const double& spreadValue)
+{
+  _spread = spreadValue;
+  *this = Note(msg, spreadValue);
+  _time = 0.0;
+  _period[0] = GetDurationFromNote(_current) * _spread;
+  _period[1] = GetDurationFromNote(_current) / _spread;
+  _periodTime[0] = 0.0;
+  _periodTime[1] = 0.0;
   forceStop();
 }
 
 void VirtualShapeGenerator::Note::start()
 {
-  time = 0.0;
-  periodTime = 0.0;
-  isPlaying = true;
-  isStopping = false;
+  _time = 0.0;
+  _periodTime[0] = 0.0;
+  _periodTime[1] = 0.0;
+  _isPlaying = true;
+  _isStopping = false;
 }
 
 void VirtualShapeGenerator::Note::stop()
 {
-  releaseTime = 0.0;
-  isPlaying = false;
-  isStopping = true;
+  _releaseElapsed = 0.0;
+  _isPlaying = false;
+  _isStopping = true;
 }
 
-double VirtualShapeGenerator::Note::normalizedPeriodLocation() const
+double VirtualShapeGenerator::Note::normalizedPeriodLocation(const int& channel) const
 {
-  return periodTime / period;
+  return _periodTime[channel] / _period[channel];
 }
 
 void VirtualShapeGenerator::Note::forceStop()
 {
-  isPlaying = false;
-  isStopping = false;
-}
-
-
-void VirtualShapeGenerator::Note::doGlideFrom(const IMidiMsg& msg) {
-  doGlideFrom(Note(msg));
+  _isPlaying = false;
+  _isStopping = false;
 }
 
 void VirtualShapeGenerator::Note::doGlideFrom(const Note& note)
 {
-  glidetime = 0.0;
-  time = note.time;
-  glide = true;
-  current = note.current;
-  endNote = target.toDouble();
-  startNote = current.toDouble();
-  period = GetDurationFromNote(current);
-  isPlaying = true;
-  isStopping = false;
+  _glideElapsed = 0.0;
+  _time = note._time;
+  _glide = true;
+  _current = note._current;
+  _endNote = _target.toDouble();
+  _startNote = _current.toDouble();
+  _period[0] = GetDurationFromNote(_current) * _spread;
+  _period[1] = GetDurationFromNote(_current) / _spread;
+  _isPlaying = true;
+  _isStopping = false;
 }
 
-void VirtualShapeGenerator::Note::increment(const double& timestep, const double & glideTime)
+void VirtualShapeGenerator::Note::doPitchAttack(const double& pitch)
 {
-  if (glide) {
-    if (glidetime > glideTime) {
-      glide = false;
-      current = target;
-    }
-    else {
-      current.fromDouble(startNote + (endNote - startNote) * glidetime / glideTime);
-      period = GetDurationFromNote(current);
-      glidetime += timestep;
-    }
+  _pitchElapsed = 0.0;
+  _time = 0.0;
+  _pitch = true;
+  _endNote = _target.toDouble();
+  _startNote = _current.toDouble() + pitch;
+  _current.fromDouble(_startNote);
+  _period[0] = GetDurationFromNote(_current) * _spread;
+  _period[1] = GetDurationFromNote(_current) / _spread;
+  _isPlaying = true;
+  _isStopping = false;
+}
+
+void VirtualShapeGenerator::Note::increment(const double& timestep, const double & glideTime, const double& pitchTime, const double& spreadValue)
+{
+  if (_glide) {
+    _glide = legato(_glideElapsed, glideTime);
+      _glideElapsed += timestep;
   }
-  time += timestep;
-  periodTime += timestep;
-  if (isStopping)
-    releaseTime += timestep;
-  while (periodTime > period)
-    periodTime -= period;
+  else if (_pitch) {
+    _pitch = legato(_pitchElapsed, pitchTime);
+    _pitchElapsed += timestep;
+  }
+  _time += timestep;
+  if (_isStopping)
+    _releaseElapsed += timestep;
+  for (int i = 0; i < 2; i++) {
+    _periodTime[i] += timestep;
+
+    while (_periodTime[i] > _period[i])
+      _periodTime[i] -= _period[i];
+  }
+}
+
+bool VirtualShapeGenerator::Note::legato(const double& elapsed, const double& duration)
+{
+  if (elapsed > duration) {
+    _current = _target;
+    return false;
+  }
+  else {
+    _current.fromDouble(_startNote + (_endNote - _startNote) * elapsed / duration);
+    _period[0] = GetDurationFromNote(_current) * _spread;
+    _period[1] = GetDurationFromNote(_current) / _spread;
+    return true;
+  }
 }
 

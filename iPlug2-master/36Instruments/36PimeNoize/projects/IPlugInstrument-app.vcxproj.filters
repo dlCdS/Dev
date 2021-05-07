@@ -84,7 +84,8 @@
       <Filter>IGraphics\Drawing</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\36Common\VirtualShapeGenerator.cpp" />
-    <ClCompile Include="SineShape.cpp" />
+    <ClCompile Include="..\SineShape.cpp" />
+    <ClCompile Include="..\..\..\36Common\Math36.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\IPlugInstrument.h" />
@@ -280,7 +281,8 @@
     </ClInclude>
     <ClInclude Include="..\IPlugInstrument_DSP.h" />
     <ClInclude Include="..\..\..\36Common\VirtualShapeGenerator.h" />
-    <ClInclude Include="SineShape.h" />
+    <ClInclude Include="..\SineShape.h" />
+    <ClInclude Include="..\..\..\36Common\Math36.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">

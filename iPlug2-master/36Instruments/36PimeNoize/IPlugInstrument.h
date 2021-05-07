@@ -3,7 +3,7 @@
 #include "IPlug_include_in_plug_hdr.h"
 #include "IControls.h"
 #include <fstream>
-#include "projects/SineShape.h"
+#include "SineShape.h"
 
 const int kNumPresets = 1;
 
@@ -72,6 +72,7 @@ enum EParams
   kParamDecay,
   kParamSustain,
   kParamRelease,
+  kParamPitchBend,
   kParamLFOShape,
   kParamLFORateHz,
   kParamLFORateTempo,

@@ -14,12 +14,13 @@ IPlugInstrument::IPlugInstrument(const InstanceInfo& info)
   GetParam(kParamDecay)->InitDouble("Decay", 10., 1., 10000., 1., "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
   GetParam(kParamSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
   GetParam(kParamRelease)->InitDouble("Release", 10., 2., 10000., 1., "ms", IParam::kFlagsNone, "ADSR");
+  GetParam(kParamPitchBend)->InitDouble("Bend", 0., -12., 12., .01);
   GetParam(kParamLFOShape)->InitEnum("LFO Shape", LFO<>::kTriangle, {LFO_SHAPE_VALIST});
   GetParam(kParamLFORateHz)->InitFrequency("LFO Rate", 1., 0.01, 40.);
   GetParam(kParamLFORateTempo)->InitEnum("LFO Rate", LFO<>::k1, {LFO_TEMPODIV_VALIST});
   GetParam(kParamLFORateMode)->InitBool("LFO Sync", true);
   GetParam(kParamLFODepth)->InitPercentage("LFO Depth");
-    
+  
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [&]() {
     return MakeGraphics(*this, PLUG_WIDTH, PLUG_HEIGHT, PLUG_FPS, GetScaleForScreen(PLUG_WIDTH, PLUG_HEIGHT));
@@ -151,6 +152,7 @@ void IPlugInstrument::OnParamChange(int paramIdx)
   kParamDecay,
   kParamSustain,
   kParamRelease,
+  kParamPitchBend,
   kParamLFOShape,
   kParamLFORateHz,
   kParamLFORateTempo,
@@ -165,7 +167,7 @@ void IPlugInstrument::OnParamChange(int paramIdx)
     sineshape.SetGlideTime(GetParam(paramIdx)->Value()/1000.);
     break;
   case kParamDoGlide:
-    sineshape.SetGlide(GetParam(paramIdx)->Value());
+    sineshape.EnableGlide(GetParam(paramIdx)->Value());
     break;
   case kParamVoices:
     sineshape.SetVoices(GetParam(paramIdx)->Value());
@@ -182,6 +184,9 @@ void IPlugInstrument::OnParamChange(int paramIdx)
   case kParamRelease:
     sineshape.SetRelease(GetParam(paramIdx)->Value() / 1000.);
     break;
+  case  kParamPitchBend:
+    sineshape.SetPitchBend(GetParam(paramIdx)->Value());
+    break;
   }
 }
 
@@ -190,6 +195,7 @@ bool IPlugInstrument::OnMessage(int msgTag, int ctrlTag, int dataSize, const voi
   if(ctrlTag == kCtrlTagBender && msgTag == IWheelControl::kMessageTagSetPitchBendRange)
   {
     const int bendRange = *static_cast<const int*>(pData);
+    sineshape.SetPitchBend(bendRange);
   }
   
   return false;
