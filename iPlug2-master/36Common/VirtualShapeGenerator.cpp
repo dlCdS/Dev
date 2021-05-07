@@ -8,7 +8,7 @@ VirtualShapeGenerator::VirtualShapeGenerator() :
   _enableGlide(true), _enablePitch(true), _attack(0.5),
 _sustain(1.0), _decay(1.05),
 _release(1.05), _glideTime(5), _voices(2), _gain(.2),
-_spread(1.01), _pitchAttack(12.), _pitchTime(.10), _pitchBend(0.0)
+_spread(1.01), _pitchAttack(12.), _pitchTime(.10), _pitchBend(0.0), _pitchRange(12.)
 {
   VirtualShapeGenerator::InitStaticStuff();
 }
@@ -30,6 +30,7 @@ void VirtualShapeGenerator::ProcessMidiMsg(const IMidiMsg& msg)
     return;
     break;
   case IMidiMsg::kPitchWheel:
+    SetPitchBend(msg.PitchWheel()* _pitchRange);
     break;
   default:
     return;
@@ -140,6 +141,11 @@ void VirtualShapeGenerator::SetPitchTime(const double& pitchtime)
 void VirtualShapeGenerator::SetPitchBend(const double& pitchbend)
 {
   _pitchBend = pow(2.0, pitchbend / 12.0);
+}
+
+void VirtualShapeGenerator::SetPitchRange(const double& pitchrange)
+{
+  _pitchRange = pitchrange;
 }
 
 void VirtualShapeGenerator::startNote(const IMidiMsg& msg)

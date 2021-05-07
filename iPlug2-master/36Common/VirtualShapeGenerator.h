@@ -38,6 +38,7 @@ public:
   void SetPitchAttack(const double& pitch);
   void SetPitchTime(const double& pitchtime);
   void SetPitchBend(const double& pitchbend);
+  void SetPitchRange(const double& pitchrange);
 
 protected:
   /// <summary>
@@ -50,7 +51,7 @@ protected:
 private:
   std::list<int> _noteOn, _noteOff;
   bool _enableGlide, _enablePitch;
-  double _attack, _sustain, _decay, _release, _glideTime, _gain, _spread, _pitchAttack, _pitchTime, _pitchBend;
+  double _attack, _sustain, _decay, _release, _glideTime, _gain, _spread, _pitchAttack, _pitchTime, _pitchBend, _pitchRange;
   int _voices;
   double _sampleRate, _sampleDuration;
 
