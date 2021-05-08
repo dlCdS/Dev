@@ -259,6 +259,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="../config.h" />
+    <ClInclude Include="..\..\..\36Common\Math36.h" />
     <ClInclude Include="..\..\..\Dependencies\IPlug\RTAudio\include\asio.h" />
     <ClInclude Include="..\..\..\Dependencies\IPlug\RTAudio\include\asiodrivers.h" />
     <ClInclude Include="..\..\..\Dependencies\IPlug\RTAudio\include\asiodrvr.h" />
@@ -325,9 +326,9 @@
     <ClInclude Include="..\Common.h" />
     <ClInclude Include="..\IPlugEffect.h" />
     <ClInclude Include="..\resources\resource.h" />
-    <ClInclude Include="PFilter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\36Common\Math36.cpp" />
     <ClCompile Include="..\..\..\Dependencies\IPlug\RTAudio\include\asio.cpp" />
     <ClCompile Include="..\..\..\Dependencies\IPlug\RTAudio\include\asiodrivers.cpp" />
     <ClCompile Include="..\..\..\Dependencies\IPlug\RTAudio\include\asiolist.cpp" />
@@ -409,7 +410,6 @@
     <ClCompile Include="..\..\..\IPlug\IPlugTimer.cpp" />
     <ClCompile Include="..\Common.cpp" />
     <ClCompile Include="..\IPlugEffect.cpp" />
-    <ClCompile Include="PFilter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\resources\main.rc" />
