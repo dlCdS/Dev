@@ -248,6 +248,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="../config.h" />
+    <ClInclude Include="..\..\..\36Common\Math36.h" />
     <ClInclude Include="..\..\..\Dependencies\IPlug\VST2_SDK\aeffect.h" />
     <ClInclude Include="..\..\..\Dependencies\IPlug\VST2_SDK\aeffectx.h" />
     <ClInclude Include="..\..\..\IGraphics\Controls\IControls.h" />
@@ -304,6 +305,7 @@
     <ClInclude Include="..\resources\resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\36Common\Math36.cpp" />
     <ClCompile Include="..\..\..\IGraphics\Controls\IControls.cpp" />
     <ClCompile Include="..\..\..\IGraphics\Controls\IPopupMenuControl.cpp" />
     <ClCompile Include="..\..\..\IGraphics\Controls\ITextEntryControl.cpp" />

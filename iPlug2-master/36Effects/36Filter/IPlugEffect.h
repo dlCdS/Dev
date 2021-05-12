@@ -17,6 +17,7 @@ enum EParams
 {
   kReal = 0,
   kImag,
+  kAtt,
   type,
   kNumParams
 };
@@ -35,5 +36,5 @@ public:
 #endif
 private:
 
-  Math36::AllpassFilter filter[2];
+  Math36::Filter filter[2];
 };

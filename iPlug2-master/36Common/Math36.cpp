@@ -15,7 +15,7 @@ double Math36::AllpassFilter::process(const double& x)
   return tmp;
 }
 
-void Math36::Filter::setPole(const Complex& pole)
+void Math36::AllpassFilter::setPole(const Complex& pole)
 {
   _pole = pole;
   _pnorm = std::norm(_pole);
@@ -396,4 +396,305 @@ bool Math36::Sigmoid::setSteepness(const double& steepness)
     type = SType::LIN;
   }
   return true;
+}
+
+Math36::Filter::Filter() : cutoff(0.1),
+att(1.0),
+realcutoff(log2(400)),
+resonance(.9),
+mode(Math36::Filter::FILTER_MODE_LOWPASS),
+buf0(0.0),
+buf1(0.0),
+buf2(0.0),
+buf3(0.0),
+usedVal(&buf3)
+{
+  calculateFeedbackAmount();
+}
+
+double Math36::Filter::process(const double& inputValue)
+{
+  buf0 += cutoff * (inputValue - buf0 + feedbackAmount * (buf0 - buf1));
+  buf1 += cutoff * (buf0 - buf1);
+  buf2 += cutoff * (buf1 - buf2);
+  buf3 += cutoff * (buf2 - buf3);
+  switch (mode) {
+  case FILTER_MODE_LOWPASS:
+    return *usedVal;
+  case FILTER_MODE_HIGHPASS:
+    return inputValue - *usedVal;
+  case FILTER_MODE_BANDPASS:
+    return buf0 - *usedVal;
+  default:
+    return 0.0;
+  }
+}
+
+void Math36::Filter::setCutoff(const double& newCutoff, const double& samplerate)
+{
+  realcutoff = log2(newCutoff);
+  cutoff =  1.0 - exp(-1.0 / samplerate * 2.0 * M_PI * newCutoff);
+  calculateFeedbackAmount();
+}
+
+void Math36::Filter::setResonance(const double& newResonance)
+{
+  resonance = newResonance;
+  calculateFeedbackAmount();
+}
+
+void Math36::Filter::setFilterMode(FilterMode newMode)
+{
+  mode = newMode;
+}
+
+void Math36::Filter::setAttenuation(const int& attenuation)
+{
+  if (attenuation >= 0 && attenuation < 3){
+    att = attenuation+1.0 ;
+    switch (attenuation)
+    {
+    case 0:
+      usedVal = &buf1;
+      break;
+    case 1:
+      usedVal = &buf2;
+      break;
+    case 2:
+      usedVal = &buf3;
+      break;
+    default:
+      break;
+    }
+  }
+    
+}
+
+double Math36::Filter::getResponse(const double& freq) const
+{
+  const double shaper = 1.;
+  double locfreq = log2(freq);
+
+  switch (mode)
+  {
+  case Math36::Filter::FILTER_MODE_LOWPASS:
+    return 1. - 1. / exp(shaper * att * (-locfreq + realcutoff) + 1.) + resonance / (0.01*shaper * (-locfreq + realcutoff) * (-locfreq + realcutoff) + 1.0);
+    break;
+  case Math36::Filter::FILTER_MODE_HIGHPASS:
+    return 1. - 1. / exp(shaper * att * (locfreq - realcutoff) + 1.) + resonance / (0.01*shaper *(-locfreq + realcutoff) * (-locfreq + realcutoff) + 1.0);
+    break;
+  case Math36::Filter::FILTER_MODE_BANDPASS:
+    return 2. - 0.001*shaper * att * (locfreq - realcutoff)* (locfreq - realcutoff) + resonance / (0.01 * shaper * (-locfreq + realcutoff) * (-locfreq + realcutoff) + 1.0);
+    break;
+  case Math36::Filter::kNumFilterModes:
+    break;
+  default:
+    break;
+  }
+}
+
+void Math36::Filter::calculateFeedbackAmount()
+{
+  feedbackAmount = resonance + resonance / (1.0 - cutoff);
+}
+
+double Shape::Sine(const double& t)
+{
+	return sin(2.0 * M_PI * t);
+}
+
+double Shape::Triangle(const double& t)
+{
+  if (t < 0.5)
+    return 4.0 * t - 1.0;
+  else return  1.0 - 4.0 * (t - 0.5);
+}
+
+double Shape::Square(const double& t, const double& size)
+{
+  if (t < size)
+    return 1.0;
+  else return -1.0;
+}
+
+double Shape::SawUp(const double& t)
+{
+  return 2.0 * t - 1.0;
+}
+
+double Shape::SawDown(const double& t)
+{
+  return SawUp(1.0 - t);
+}
+
+Math36::LFO::LFO() : _type(Shape::Type::TRIANGLE),
+_time(0.0),
+_period(1.),
+_rate(1.),
+_phase(0.),
+_sync(true)
+{
+}
+
+double Math36::LFO::get(const double& samplePerBeat, const int& samplePos)
+{
+  double time = double(samplePos) / samplePerBeat;
+  return getValue(time);
+}
+
+double Math36::LFO::get(const double& time)
+{
+  return getValue(time);
+}
+
+double Math36::LFO::getFromLocalTime()
+{
+  return getValue(_time);
+}
+
+void Math36::LFO::increment(const double& time)
+{
+  _time += time;
+}
+
+void Math36::LFO::reset()
+{
+  _time = 0.0;
+}
+
+void Math36::LFO::setMode(const bool& sync)
+{
+  _sync = sync;
+}
+
+void Math36::LFO::setFreq(const double& freq)
+{
+  if (freq > 0.0)
+  _period = 1.0 / freq;
+}
+
+void Math36::LFO::setRate(const int& type, const double& bpm)
+{if(type>=0 && type < TempoDivisonToDoubleSize)
+  _rate = TempoDivisonToDouble[type] * bpm / 60.;
+}
+
+double Math36::LFO::getLastValue() const
+{
+  return _last;
+}
+
+void Math36::LFO::setType(const Shape::Type type)
+{
+  _type = type;
+}
+
+void Math36::LFO::setPhase(const double& phase)
+{
+  _phase = phase;
+}
+
+double Math36::LFO::getValue(const double &t)
+{
+  double loct;
+  if (_sync) {
+    loct = t / _rate;
+  }
+  else {
+    loct = t / _period;
+  }
+  loct -= int(loct);
+  loct += _phase;
+  if (loct > 1.0)
+    loct -= 1.0;
+  if (loct > 1.0) loct -= 1.0;
+  
+  switch (_type)
+  {
+  case Shape::Type::SINE:
+    _last = (1.0 + Shape::Sine(loct)) / 2.0;
+    break;
+  case Shape::Type::TRIANGLE:
+    _last = (1.0 + Shape::Triangle(loct)) / 2.0;
+    break;
+  case Shape::Type::SQUARE:
+    _last = (1.0 + Shape::Square(loct)) / 2.0;
+    break;
+  case Shape::Type::SAWUP:
+    _last = (1.0 + Shape::SawUp(loct)) / 2.0;
+    break;
+  case Shape::Type::SAWDOWN:
+    _last = (1.0 + Shape::SawDown(loct)) / 2.0;
+    break;
+  default:
+    break;
+  }
+  return _last;
+}
+
+Math36::FFT::FFT() : _damp(0.9)
+{
+}
+
+void Math36::FFT::setSize(const int& size)
+{
+  if(_size != size){
+    _size = size;
+    if (_array.size() != size) {
+      _array.resize(size);
+      _resarray.resize(size);
+      _display.resize(size);
+      for (int i = 0; i < _size; i++)
+        _display[i] = 0.0;
+      _count = 0;
+    }
+  }
+}
+
+void Math36::FFT::setSampleRate(const double& rate)
+{
+  _rate = rate;
+}
+
+void Math36::FFT::feed(const double& val)
+{
+  if(_count < _size)
+    _array[_count] = Complex(val, 0.0);
+  _count++;
+}
+
+void Math36::FFT::compute()
+{
+  double tmp;
+  if(_count >= _size) {
+    fft(_array, _size);
+    for (int i = 0; i < _size / 2 + 1; i++){
+      Complex sum = _array[i] + _array[_size - i];
+      _display[i] = _damp * _display[i] + (sum.real() * sum.real() + sum.imag() * sum.imag()) / _size;
+      if (_display[i] < 0.0 || _display[i] > 1000000.)_display[i] = 0.0;
+    }
+    _count = 0;
+  }
+}
+
+double Math36::FFT::getFromFreq(const double& freq)
+{
+  double pos = freq * _size / _rate / 2., inter(pos - int(pos));
+  int left(pos), right(pos + 1.0);
+
+  if (left < 0) left = 0;
+  else if (left >= _size) left = _size - 1;
+
+  if (right < 0) right = 0;
+  else if (right >= _size) right = _size - 1;
+
+  return getFromIndex(left) * (1.0 - inter)
+    + getFromIndex(right) * inter;
+}
+
+double Math36::FFT::getFromIndex(const int& index)
+{
+  if (index >= 0 && index < (_size) / 2 + 1){
+    return log(1.0 + _display[index]);
+  }
+  else return 0.0;
 }

@@ -6,9 +6,11 @@ std::mutex VirtualShapeGenerator::s_mutex;
 
 VirtualShapeGenerator::VirtualShapeGenerator() :
   _enableGlide(true), _enablePitch(true), _attack(0.5),
-_sustain(1.0), _decay(1.05),
-_release(1.05), _glideTime(5), _voices(2), _gain(.2),
-_spread(1.01), _pitchAttack(12.), _pitchTime(.10), _pitchBend(0.0), _pitchRange(12.)
+  _sustain(1.0), _decay(1.05),
+  _release(1.05), _glideTime(5), _voices(2), _gain(.2),
+  _spread(1.01), _pitchAttack(12.), _pitchTime(.10), _pitchBend(0.0),
+  _pitchRange(12.), _globalPitch(0.0), _phase(0.0),
+  _lfoFilterMix(1.0), _fa_time_count(0.0)
 {
   VirtualShapeGenerator::InitStaticStuff();
 }
@@ -37,10 +39,24 @@ void VirtualShapeGenerator::ProcessMidiMsg(const IMidiMsg& msg)
   }
 }
 
-void VirtualShapeGenerator::ProcessBlock(sample** outputs, int nChannel,  int nFrames)
+void VirtualShapeGenerator::ProcessBlock(sample** outputs, const int& nChannel, const  int& nFrames, const int& samplePos, const double& samplesPerBeat, const double& sampleRate)
 {
-  double currentgain, time;
+  double currentgain, time, toPreFFT, toPostFFT;
+  // fft stuff
+  fftPreEffect.setSize(FFT_Size);
+  fftPreEffect.setSampleRate(sampleRate);
+  fftPostEffect.setSize(FFT_Size);
+  fftPostEffect.setSampleRate(sampleRate);
+
+  for (int c = 0; c < nChannel; c++)
+    _attackFilter[c].setCutoff(_fa_fromf, sampleRate);
+
   for (int i = 0; i < nFrames; i++) {
+    toPreFFT = 0.0;
+    toPostFFT = 0.0;
+
+    _lfofilter.get(samplesPerBeat, samplePos + i);
+
     for (int c = 0; c < nChannel; c++) {
       outputs[c][i] = 0;
       _noteOnMutex.lock();
@@ -51,8 +67,8 @@ void VirtualShapeGenerator::ProcessBlock(sample** outputs, int nChannel,  int nF
         else currentgain = _sustain;
 
         _noteTab[*it]._lastGain = currentgain;
-        outputs[c][i] += _gain * currentgain * getShape(_noteTab[*it].normalizedPeriodLocation(c));
-        _noteTab[*it].increment(_sampleDuration * _pitchBend, _glideTime, _pitchTime, _spread);
+        outputs[c][i] += _gain * currentgain * getShapeWithPhase(_noteTab[*it].normalizedPeriodLocation(c), _phase);
+        _noteTab[*it].increment(_sampleDuration * _globalPitch, _glideTime, _pitchTime);
       }
       _noteOnMutex.unlock();
       _noteOffMutex.lock();
@@ -62,13 +78,24 @@ void VirtualShapeGenerator::ProcessBlock(sample** outputs, int nChannel,  int nF
         }
         else {
           currentgain = _gain * _noteTab[*it]._lastGain * (_release - _noteTab[*it]._releaseElapsed) / _release;
-          outputs[c][i] += currentgain * getShape(_noteTab[*it].normalizedPeriodLocation(c));
-          _noteTab[*it].increment(_sampleDuration * _pitchBend , _glideTime, _pitchTime, _spread);
+          outputs[c][i] += currentgain * getShapeWithPhase(_noteTab[*it].normalizedPeriodLocation(c), _phase);
+          _noteTab[*it].increment(_sampleDuration * _globalPitch, _glideTime, _pitchTime);
           ++it;
+
         }
       }
+      toPreFFT += outputs[c][i];
+      outputs[c][i] = (1.0 - _lfoFilterMix) * outputs[c][i] + _lfoFilterMix * _lfoFilter[c].process(outputs[c][i]);
+      if (_enableAttackFilter)
+        outputs[c][i] = _attackFilter[c].process(outputs[c][i]);
+      toPostFFT += outputs[c][i];
       _noteOffMutex.unlock();
     }
+
+    fftPreEffect.feed(toPreFFT / _gain);
+    fftPostEffect.feed(toPostFFT / _gain);
+    fftPreEffect.compute();
+    fftPostEffect.compute();
   }
 }
 
@@ -76,6 +103,11 @@ void VirtualShapeGenerator::Reset(const double& sampleRateValue)
 {
   _sampleRate = sampleRateValue;
   _sampleDuration = 1.0 / sampleRateValue;
+}
+
+void VirtualShapeGenerator::SetPhase(const double& phase)
+{
+  _phase = phase;
 }
 
 void VirtualShapeGenerator::EnableGlide(const bool& glideValue)
@@ -103,6 +135,23 @@ void VirtualShapeGenerator::SetRelease(const double& releaseValue)
   _release = releaseValue;
 }
 
+double VirtualShapeGenerator::GetEnvelope(const double& x)
+{
+  //
+  double relatt = sqrt(_attack*1000.) / 350.,
+    reldec = sqrt(_decay * 1000.) / 350.,
+    relrel = sqrt(_release * 1000.) / 350.;
+  if (x < relatt)
+    return x / relatt;
+  else if (x < relatt + reldec)
+    return _sustain + (relatt + reldec - x) / reldec * (1.0 - _sustain);
+  else if (x < relatt + reldec + 50. / 350.)
+    return _sustain;
+  else if (x < relatt + reldec + 50. / 350. + relrel)
+    return _sustain *  (relatt + reldec + 50. / 350. + relrel - x) / relrel;
+  else return -1.0;
+}
+
 void VirtualShapeGenerator::SetGlideTime(const double& glideTimeValue)
 {
   _glideTime = glideTimeValue;
@@ -121,6 +170,11 @@ void VirtualShapeGenerator::SetVoices(const int& voicesValue)
 void VirtualShapeGenerator::SetSpread(const double& spreadValue)
 {
   _spread = spreadValue;
+  for (auto it = _noteOn.begin(); it != _noteOn.end(); ++it)
+    _noteTab[*it].setSpread(_spread);
+  for (auto it = _noteOff.begin(); it != _noteOff.end(); ++it)
+    _noteTab[*it].setSpread(_spread);
+  
 }
 
 void VirtualShapeGenerator::EnablePitch(const bool& enable)
@@ -138,14 +192,136 @@ void VirtualShapeGenerator::SetPitchTime(const double& pitchtime)
   _pitchTime = pitchtime;
 }
 
+void VirtualShapeGenerator::EnableAttackFilter(const bool& enable)
+{
+  _enableAttackFilter = enable;
+}
+
 void VirtualShapeGenerator::SetPitchBend(const double& pitchbend)
 {
-  _pitchBend = pow(2.0, pitchbend / 12.0);
+  _pitchBend = pitchbend;
+  _globalPitch = double(_pitch) + _detune + _pitchBend;
+  _globalPitch = pow(2.0, _globalPitch / 12.0);
 }
 
 void VirtualShapeGenerator::SetPitchRange(const double& pitchrange)
 {
   _pitchRange = pitchrange;
+}
+
+void VirtualShapeGenerator::SetDetune(const double& detune)
+{
+  _detune = detune;
+  _globalPitch = double(_pitch) + _detune + _pitchBend;
+  _globalPitch = pow(2.0, _globalPitch / 12.0);
+}
+
+void VirtualShapeGenerator::SetPitch(const int& pitch)
+{
+  _pitch = pitch;
+  _globalPitch = double(_pitch) + _detune + _pitchBend;
+  _globalPitch = pow(2.0, _globalPitch / 12.0);
+}
+
+double VirtualShapeGenerator::GetPreEffectFFT(const double& freq)
+{
+ // return fftPreEffect.getFromIndex(freq);
+  return fftPreEffect.getFromFreq(freq);
+}
+
+double VirtualShapeGenerator::GetPostEffectFFT(const double& freq)
+{
+ // return fftPostEffect.getFromIndex(freq);
+  return fftPostEffect.getFromFreq(freq);
+}
+
+void VirtualShapeGenerator::SetLFOFilterMix(const double& mix)
+{
+  _lfoFilterMix = mix;
+}
+
+double VirtualShapeGenerator::GetAttackFilter(const double& freq)
+{
+  if (_enableAttackFilter)
+    return _attackFilter[0].getResponse(freq);
+  else return - 1.;
+}
+
+double VirtualShapeGenerator::GetLFOFilter(const double& freq)
+{
+  return _lfoFilterMix * _lfoFilter[0].getResponse(freq);
+}
+
+void VirtualShapeGenerator::SetAttackFilterType(const Math36::Filter::FilterMode& type)
+{
+  _attackFilter[0].setFilterMode(type);
+  _attackFilter[1].setFilterMode(type);
+}
+
+void VirtualShapeGenerator::SetAttackFilterTrig(const LaunchMode& type)
+{
+  _fa_launch = type;
+}
+
+void VirtualShapeGenerator::SetAttackFilterFromF(const double& fromf)
+{
+  _fa_fromf = fromf;
+}
+
+void VirtualShapeGenerator::SetAttackFilterFromN(const double& fromn)
+{
+  _fa_fromn = fromn;
+}
+
+void VirtualShapeGenerator::SetAttackFilterToF(const double& tof)
+{
+  _fa_tof = tof;
+}
+
+void VirtualShapeGenerator::SetAttackFilterToN(const double& ton)
+{
+  _fa_ton = ton;
+}
+
+void VirtualShapeGenerator::SetAttackFilterAtt(const int& att)
+{
+  _attackFilter[0].setAttenuation(att);
+  _attackFilter[1].setAttenuation(att);
+}
+
+void VirtualShapeGenerator::SetAttackFilterFollow(const bool& follow)
+{
+  _fa_follow = follow;
+}
+
+void VirtualShapeGenerator::SetAttackFilterResFrom(const double& resfrom)
+{
+  _fa_resfrom = resfrom;
+}
+
+void VirtualShapeGenerator::SetAttackFilterResTo(const double& resto)
+{
+  _fa_resto = resto;
+}
+
+void VirtualShapeGenerator::SetAttackFilterTime(const double& time)
+{
+  _fa_time = time;
+}
+
+void VirtualShapeGenerator::SetLFOFilterType(const Math36::Filter::FilterMode& type)
+{
+  _lfoFilter[0].setFilterMode(type);
+  _lfoFilter[1].setFilterMode(type);
+}
+
+
+
+sample VirtualShapeGenerator::getShapeWithPhase(const double& t, const double& phase)
+{
+  if (t + phase > 1.0)
+    return getShape(t + phase - 1.0);
+  else return getShape(t + phase);
 }
 
 void VirtualShapeGenerator::startNote(const IMidiMsg& msg)
@@ -289,6 +465,13 @@ void VirtualShapeGenerator::Note::reset(const IMidiMsg& msg, const double& sprea
   forceStop();
 }
 
+void VirtualShapeGenerator::Note::setSpread(const double& spreadValue)
+{
+  _spread = spreadValue;
+  _period[0] = GetDurationFromNote(_current) * _spread;
+  _period[1] = GetDurationFromNote(_current) / _spread;
+}
+
 void VirtualShapeGenerator::Note::start()
 {
   _time = 0.0;
@@ -344,7 +527,7 @@ void VirtualShapeGenerator::Note::doPitchAttack(const double& pitch)
   _isStopping = false;
 }
 
-void VirtualShapeGenerator::Note::increment(const double& timestep, const double & glideTime, const double& pitchTime, const double& spreadValue)
+void VirtualShapeGenerator::Note::increment(const double& timestep, const double & glideTime, const double& pitchTime)
 {
   if (_glide) {
     _glide = legato(_glideElapsed, glideTime);

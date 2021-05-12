@@ -7,11 +7,13 @@
 IPlugEffect::IPlugEffect(const InstanceInfo& info)
 : Plugin(info, MakeConfig(kNumParams, kNumPrograms))
 {
-  GetParam(kReal)->InitDouble("Real", 0.5, -1, 1, 0.001);
-  GetParam(kImag)->InitDouble("Imag", 0.0, -1, 1, 0.001);
+  GetParam(kReal)->InitDouble("Real", 0., 0.0, 22000., 1.);
+  GetParam(kImag)->InitDouble("Imag", 0.0, .0, 1., 0.001);
+  GetParam(kAtt)->InitInt("Att", 1, 1, 3);
 
 
-
+  filter[0].setFilterMode(Math36::Filter::FILTER_MODE_LOWPASS);
+  filter[1].setFilterMode(Math36::Filter::FILTER_MODE_HIGHPASS);
 
 
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
@@ -124,10 +126,11 @@ IPlugEffect::IPlugEffect(const InstanceInfo& info)
     
 
       // upper left
-      pGraphics->AttachControl(new IVKnobControl(cell(0, 3).GetMidVPadded(buttonSize), kReal, "real", style, false), kNoTag, "vcontrols");
+      pGraphics->AttachControl(new IVKnobControl(cell(0, 3).GetMidVPadded(buttonSize), kReal, "cut", style, false), kNoTag, "vcontrols");
       
       //down left
-      pGraphics->AttachControl(new IVKnobControl(cell(1, 3).GetMidVPadded(buttonSize), kImag, "imag", style, false), kNoTag, "vcontrols");
+      pGraphics->AttachControl(new IVKnobControl(cell(1, 3).GetMidVPadded(buttonSize), kImag, "res", style, false), kNoTag, "vcontrols");
+      pGraphics->AttachControl(new IVKnobControl(cell(2, 3).GetMidVPadded(buttonSize), kAtt, "att", style, false), kNoTag, "vcontrols");
      
        }
 
@@ -148,13 +151,20 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 
   double real = GetParam(kReal)->Value();
   double imag = GetParam(kImag)->Value();
+  int att = GetParam(kAtt)->Value();
 
-  for (int c = 0; c < nChans; c++)
-    filter[c].setPole(Complex(real, imag));
+  for (int c = 0; c < nChans; c++){
+    filter[c].setCutoff(real, sampleRate);
+    filter[c].setResonance(imag);
+    filter[c].setAttenuation(att);
+  }
 
   for (int c = 0; c < nChans; c++) {
     for (int i = 0; i < nFrames; i++) {
+      if(c == 0)
       outputs[c][i] = filter[c].process(inputs[c][i]);
+      else
+        outputs[c][i] = filter[c].process(inputs[c][i]);
     }
   }
  
