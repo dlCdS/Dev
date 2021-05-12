@@ -366,6 +366,26 @@ void VirtualShapeGenerator::stopNote(const IMidiMsg& msg)
   }
 }
 
+void VirtualShapeGenerator::filterNewNote()
+{
+  switch (_fa_launch) {
+  case 0:
+    if (_noteOn.size() <= 1) {
+
+    }
+  }
+}
+
+double VirtualShapeGenerator::getCurve(const double& x, const double& coef)
+{
+  return x * (coef + 1.0) / (coef * x + 1.);
+}
+
+double VirtualShapeGenerator::getCurve(const double& x, const double& coef, const double& from, const double& to)
+{
+  return getCurve((x - from) / (to - from), coef);
+}
+
 double VirtualShapeGenerator::GetDurationFromMidi(const IMidiMsg& msg)
 {
   return VirtualShapeGenerator::GetDurationFromNote(SimpleMidi(msg));

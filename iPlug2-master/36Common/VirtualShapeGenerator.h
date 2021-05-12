@@ -111,6 +111,7 @@ private:
   double _attack, _sustain, _decay, _release, _glideTime, _gain, _spread, _pitchAttack, _pitchTime, _pitchBend, _pitchRange, _globalPitch, _detune, _phase;
   int _voices, _pitch;
   double _sampleRate, _sampleDuration;
+  double _automation_time;
 
   std::mutex _noteOnMutex, _noteOffMutex;
   void startNote(const IMidiMsg& msg);
@@ -128,6 +129,9 @@ private:
   LaunchMode _fa_launch;
   void filterAttackIncrement(const double& t);
   void filterNewNote();
+
+  double getCurve(const double& x, const double& coef);
+  double getCurve(const double& x, const double& coef, const double& from, const double &to);
 
   static double GetDurationFromMidi(const IMidiMsg& msg);
   static double GetDurationFromNote(const int& note, const int& pitch);
