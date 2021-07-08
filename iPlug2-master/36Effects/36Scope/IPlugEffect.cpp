@@ -225,8 +225,8 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
   const int nChans = NOutChansConnected();
   const double sampleRate = GetSampleRate();
 
-  int samplesPerBeat = (int)GetSamplesPerBeat();
-  int samplePos = (int)GetSamplePos();
+  double samplesPerBeat = GetSamplesPerBeat();
+  double samplePos = GetSamplePos();
   static int samplePos_dbg = 0;
 
   /*
@@ -284,6 +284,7 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
     else if (displayCount % 1 == 0) GetUI()->SetAllControlsDirty();
 
   double relpos, min_relpos(start), max_relpos(start + size);
+  double window(grid * samplesPerBeat), winpos;
   int pos;
   int ntodraw = (double)maxScopeBuffSize / (size * grid * (double)samplesPerBeat) + 1,
     ph_todraw = (double)maxScopeBuffSize / (grid * (double)samplesPerBeat) + 1;
@@ -293,7 +294,9 @@ void IPlugEffect::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
   
   if (nChans == 2) {
     for (int s = 0; s < nFrames; s++) {
-      relpos = double((samplePos + s) % int(grid * (double)samplesPerBeat)) / grid / (double)samplesPerBeat;
+      winpos = samplePos + double(s);
+      winpos = winpos - double(int(winpos / window)) * window;
+      relpos = winpos / window;
       pos = int((relpos - min_relpos) / (max_relpos - min_relpos) * (double)maxScopeBuffSize);
       for (int i = 0; i < nChans; i++) {
 
