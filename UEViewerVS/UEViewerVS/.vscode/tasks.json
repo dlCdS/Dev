@@ -1,0 +1,77 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build",
+			"type": "shell",
+			"command": "./build.sh ${input:BuildOptions}",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "Compile",
+			"type": "shell",
+			"command": "./build.sh ${input:BuildOptions} --file \"${relativeFile}\"",
+			"presentation": {
+				"reveal": "always",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "Build UITest",
+			"type": "shell",
+			"command": "./build.sh --debug",
+			"presentation": {
+				"reveal": "always",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"options": {
+				"cwd": "Tools/UITest"
+			},
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "Query UE4 Version Constant",
+			"type": "shell",
+			"command": "./UE4Version.pl ${input:ue4const}",
+			"presentation": {
+				"reveal": "always",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"options": {
+				"cwd": "Docs"
+			},
+			"problemMatcher": ""
+		}
+	],
+    "inputs": [
+		// Requesting a customConfigurationVariables from c_cpp_properties.json (undocumented, may be changed in a future_
+		// https://stackoverflow.com/a/62404215
+        {
+            "id": "BuildOptions",
+            "type": "command",
+            "command": "cpptools.activeConfigCustomVariable",
+            "args": "BuildOptions"
+        },
+        {
+            "id": "ue4const",
+            "type": "promptString",
+            "description": "UE4 C++ constant:",
+            "default": ""
+        },
+ 	]
+}

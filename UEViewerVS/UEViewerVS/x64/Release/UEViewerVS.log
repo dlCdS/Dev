@@ -1,0 +1,131 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1044,5): warning MSB8027: Deux ou plusieurs fichiers avec le nom Main.cpp généreront des sorties vers le même emplacement. Cela peut entraîner une génération incorrecte. Les fichiers impliqués sont Tools\PackageExtract\Main.cpp, Tools\PackageTool\Main.cpp, Tools\PackageUnpack\Main.cpp, Tools\TypeInfo\Main.cpp, Tools\UITest\Main.cpp, Tools\UmdExtract\Main.cpp, UmodelTool\Main.cpp.
+  Main.cpp
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(5,1): warning C4005: '_CRT_SECURE_NO_WARNINGS' : redéfinition de macro
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\UmodelTool\Main.cpp : message : voir la définition précédente de '_CRT_SECURE_NO_WARNINGS'
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(357,19): warning C4595: 'operator new' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(359,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(362,19): warning C4595: 'operator new[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(364,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(367,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(372,18): warning C4595: 'operator delete[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(381,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Math3D.h(20,14): warning C4244: 'return' : conversion de 'double' en 'float', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(1524,26): warning C4018: '<' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(2406,1): warning C4267: '=' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnObject.h(100,1): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(312,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(319,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(326,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(333,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(341,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealMaterial\UnMaterial.h(299,1): warning C4267: 'initialisation' : conversion de 'size_t' en 'int', perte possible de données
+  PackageDialog.cpp
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(5,1): warning C4005: '_CRT_SECURE_NO_WARNINGS' : redéfinition de macro
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\UmodelTool\PackageDialog.cpp : message : voir la définition précédente de '_CRT_SECURE_NO_WARNINGS'
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(357,19): warning C4595: 'operator new' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(359,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(362,19): warning C4595: 'operator new[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(364,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(367,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(372,18): warning C4595: 'operator delete[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(381,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Math3D.h(20,14): warning C4244: 'return' : conversion de 'double' en 'float', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(1524,26): warning C4018: '<' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(2406,1): warning C4267: '=' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(312,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(319,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(326,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(333,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(341,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\UmodelTool\PackageDialog.cpp(631,32): warning C4267: 'initialisation' : conversion de 'size_t' en 'int', perte possible de données
+  SettingsDialog.cpp
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(5,1): warning C4005: '_CRT_SECURE_NO_WARNINGS' : redéfinition de macro
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\UmodelTool\SettingsDialog.cpp : message : voir la définition précédente de '_CRT_SECURE_NO_WARNINGS'
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(357,19): warning C4595: 'operator new' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(359,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(362,19): warning C4595: 'operator new[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(364,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(367,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(372,18): warning C4595: 'operator delete[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(381,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Math3D.h(20,14): warning C4244: 'return' : conversion de 'double' en 'float', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(1524,26): warning C4018: '<' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(2406,1): warning C4267: '=' : conversion de 'size_t' en 'int', perte possible de données
+  StartupDialog.cpp
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(5,1): warning C4005: '_CRT_SECURE_NO_WARNINGS' : redéfinition de macro
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\UmodelTool\StartupDialog.cpp : message : voir la définition précédente de '_CRT_SECURE_NO_WARNINGS'
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(357,19): warning C4595: 'operator new' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(359,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(362,19): warning C4595: 'operator new[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(364,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(367,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(372,18): warning C4595: 'operator delete[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(381,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Math3D.h(20,14): warning C4244: 'return' : conversion de 'double' en 'float', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(1524,26): warning C4018: '<' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(2406,1): warning C4267: '=' : conversion de 'size_t' en 'int', perte possible de données
+  UmodelApp.cpp
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(5,1): warning C4005: '_CRT_SECURE_NO_WARNINGS' : redéfinition de macro
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\UmodelTool\UmodelApp.cpp : message : voir la définition précédente de '_CRT_SECURE_NO_WARNINGS'
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(357,19): warning C4595: 'operator new' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(359,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(362,19): warning C4595: 'operator new[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(364,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(367,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(372,18): warning C4595: 'operator delete[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(381,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Math3D.h(20,14): warning C4244: 'return' : conversion de 'double' en 'float', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(1524,26): warning C4018: '<' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(2406,1): warning C4267: '=' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnObject.h(100,1): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(312,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(319,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(326,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(333,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(341,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealMaterial\UnMaterial.h(299,1): warning C4267: 'initialisation' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\UmodelTool\ErrorDialog.h(21,41): warning C4244: 'argument' : conversion de 'unsigned __int64' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\UmodelTool\UE4AesKeyDialog.h(29,13): warning C4244: 'initialisation' : conversion de '__int64' en 'int', perte possible de données
+  UmodelCommands.cpp
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(5,1): warning C4005: '_CRT_SECURE_NO_WARNINGS' : redéfinition de macro
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\UmodelTool\UmodelCommands.cpp : message : voir la définition précédente de '_CRT_SECURE_NO_WARNINGS'
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(357,19): warning C4595: 'operator new' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(359,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(362,19): warning C4595: 'operator new[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(364,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(367,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(372,18): warning C4595: 'operator delete[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(381,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Math3D.h(20,14): warning C4244: 'return' : conversion de 'double' en 'float', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(1524,26): warning C4018: '<' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(2406,1): warning C4267: '=' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnObject.h(100,1): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(312,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(319,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(326,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(333,23): warning C4018: '>=' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnrealPackage\UnPackage.h(341,23): warning C4018: '>=' : incompatibilité signed/unsigned
+  UmodelSettings.cpp
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(5,1): warning C4005: '_CRT_SECURE_NO_WARNINGS' : redéfinition de macro
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\UmodelTool\UmodelSettings.cpp : message : voir la définition précédente de '_CRT_SECURE_NO_WARNINGS'
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(357,19): warning C4595: 'operator new' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(359,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(362,19): warning C4595: 'operator new[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(364,23): warning C4267: 'argument' : conversion de 'size_t' en 'int', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(367,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(372,18): warning C4595: 'operator delete[]' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Core.h(381,18): warning C4595: 'operator delete' : impossible de déclarer les fonctions non-membres operator new ou operator delete en tant que fonctions inline
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Core\Math3D.h(20,14): warning C4244: 'return' : conversion de 'double' en 'float', perte possible de données
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(1524,26): warning C4018: '<' : incompatibilité signed/unsigned
+C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\UEViewerVS\Unreal\UnCore.h(2406,1): warning C4267: '=' : conversion de 'size_t' en 'int', perte possible de données
+x64\Release\Main.obj : warning LNK4042: objet spécifié plus d'une fois ; définitions supplémentaires ignorées
+x64\Release\Main.obj : warning LNK4042: objet spécifié plus d'une fois ; définitions supplémentaires ignorées
+x64\Release\Main.obj : warning LNK4042: objet spécifié plus d'une fois ; définitions supplémentaires ignorées
+x64\Release\Main.obj : warning LNK4042: objet spécifié plus d'une fois ; définitions supplémentaires ignorées
+x64\Release\Main.obj : warning LNK4042: objet spécifié plus d'une fois ; définitions supplémentaires ignorées
+x64\Release\Main.obj : warning LNK4042: objet spécifié plus d'une fois ; définitions supplémentaires ignorées
+  Génération de code en cours
+  Previous IPDB not found, fall back to full compilation.
+  All 7548 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Fin de la génération du code
+  UEViewerVS.vcxproj -> C:\Users\e_fdenis\Documents\Dev\dev_ue\UEViewerVS\x64\Release\UEViewerVS.exe

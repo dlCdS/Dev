@@ -1,0 +1,82 @@
+{
+  "configurations": [
+    {
+      "inheritEnvironments": [ "msvc_x86" ],
+      "name": "Win32-Release",
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}\\**"
+      ],
+      "defines": [
+        "WIN32",
+        "HAS_UI",
+        "RENDERING"
+      ],
+      "intelliSenseMode": "windows-msvc-x86",
+      "environments": [
+        {
+          "BuildOptions": "--exe umodel.exe"
+        }
+      ]
+    },
+    {
+      "inheritEnvironments": [ "msvc_x86" ],
+      "name": "Win32-Debug",
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}\\**"
+      ],
+      "defines": [
+        "WIN32",
+        "HAS_UI",
+        "RENDERING",
+        "MAX_DEBUG"
+      ],
+      "intelliSenseMode": "windows-msvc-x86",
+      "environments": [
+        {
+          "BuildOptions": "--debug --exe umodel.exe"
+        }
+      ]
+    },
+    {
+      "inheritEnvironments": [ "msvc_x64" ],
+      "name": "Win64-Release",
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}\\**"
+      ],
+      "defines": [
+        "WIN32",
+        "HAS_UI",
+        "RENDERING"
+      ],
+      "intelliSenseMode": "windows-msvc-x64",
+      "environments": [
+        {
+          "BuildOptions": "--64 --exe umodel.exe"
+        }
+      ]
+    },
+    {
+      "inheritEnvironments": [ "msvc_x64" ],
+      "name": "Win64-Debug",
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}\\**"
+      ],
+      "defines": [
+        "WIN32",
+        "HAS_UI",
+        "RENDERING",
+        "MAX_DEBUG"
+      ],
+      "intelliSenseMode": "windows-msvc-x64",
+      "environments": [
+        {
+          "BuildOptions": "--64 --debug --exe umodel.exe"
+        }
+      ]
+    }
+  ]
+}

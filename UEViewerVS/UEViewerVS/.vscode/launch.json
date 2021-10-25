@@ -1,0 +1,52 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	// C/C++ options: https://github.com/Microsoft/vscode-cpptools/blob/master/launch.md
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "(No arguments)",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/${input:ExeName}",
+			"args": [],
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}",
+			"environment": [],
+			"logging": { "moduleLoad": false },
+			"visualizerFile": "${workspaceFolder}/Tools/umodel.natvis"
+		},
+		{
+			"name": "Volatile (cmdline.cfg)",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/${input:ExeName}",
+			"args": [ "@${workspaceFolder}/docs/cmdline.cfg" ],
+			"cwd": "${workspaceFolder}",
+			"logging": { "moduleLoad": false },
+			"visualizerFile": "${workspaceFolder}/Tools/umodel.natvis"
+		},
+		{
+			"name": "UI Test",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"preLaunchTask": "Build UITest",
+			"program": "${workspaceFolder}/Tools/UITest/uitest.exe",
+			"args": [],
+			"cwd": "${workspaceFolder}",
+			"logging": { "moduleLoad": false },
+			"visualizerFile": "${workspaceFolder}/Tools/umodel.natvis"
+		}
+	],
+    "inputs": [
+		// Requesting a customConfigurationVariables from c_cpp_properties.json (undocumented, may be changed in a future_
+		// https://stackoverflow.com/a/62404215
+        {
+            "id": "ExeName",
+            "type": "command",
+            "command": "cpptools.activeConfigCustomVariable",
+            "args": "ExeName"
+        }
+ 	]
+}
